@@ -1,62 +1,35 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { validateUserLogin } from "@/app/services/AuthService";
 import { NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      return Response.json(
-        { message: "User tidak ditemukan" },
-        { status: 401 },
-      );
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return Response.json({ message: "Password salah" }, { status: 401 });
-    }
-
-    // 🔥 Generate JWT
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: "1d", // token berlaku 1 hari
-      },
-    );
+    // Panggil fungsi dapur kita
+    const { user, token } = await validateUserLogin(email, password);
 
     const response = NextResponse.json({
       message: "Login berhasil",
       user,
-      token,
     });
 
-    // 🔥 simpan ke cookie
+    // Simpan ke cookie menggunakan fitur bawaan Next.js
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
       path: "/",
+      maxAge: 60 * 60 * 24, // 1 hari
     });
 
     return response;
-  } catch (error) {
-    return Response.json(
-      { message: "Terjadi kesalahan server" },
-      { status: 500 },
+  } catch (error: any) {
+    // Handle error spesifik
+    const status = error.message === "User tidak ditemukan" || error.message === "Password salah" ? 401 : 500;
+    
+    return NextResponse.json(
+      { message: error.message || "Terjadi kesalahan server" },
+      { status }
     );
   }
 }

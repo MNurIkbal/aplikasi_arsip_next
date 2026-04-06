@@ -1,9 +1,11 @@
 import Layout from "@/app/components/layout";
+import Breakbout from "@/app/components/ui/breakbout";
 
 export default function DashboardPage() {
   return (
     <>
     <Layout>
+      <Breakbout menu="Dashboard" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
       <div className="bg-white p-6 rounded-xl shadow">
