@@ -2,33 +2,44 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  useReactTable, 
-  getCoreRowModel, 
-  flexRender, 
-  createColumnHelper 
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
 } from "@tanstack/react-table";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  Plus,
+} from "lucide-react";
 
 const columnHelper = createColumnHelper<any>();
 
-const columns = [
-  columnHelper.accessor("name", { header: "Nama Lengkap" }),
-  columnHelper.accessor("email", { header: "Email" }),
-  columnHelper.accessor("role", { 
-    header: "Role",
-    cell: (info) => (
-      <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase">
-        {info.getValue()}
-      </span>
-    )
-  }),
-];
+// 🔥 Style Role
+const getRoleStyle = (role: string) => {
+  switch (role) {
+    case "admin":
+      return "bg-red-50 text-red-600";
+    case "user":
+      return "bg-green-50 text-green-600";
+    default:
+      return "bg-gray-100 text-gray-600";
+  }
+};
 
 export default function UserTable() {
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
   const [search, setSearch] = useState("");
 
+  // 🔥 Fetch Data
   const { data, isLoading } = useQuery({
     queryKey: ["users", pagination, search],
     queryFn: async () => {
@@ -38,6 +49,80 @@ export default function UserTable() {
       return res.json();
     },
   });
+
+  // 🔥 Columns
+  const columns = [
+    columnHelper.accessor("name", {
+      header: "Nama Lengkap",
+    }),
+
+    columnHelper.accessor("email", {
+      header: "Email",
+    }),
+
+    columnHelper.accessor("role", {
+      header: "Role",
+      cell: (info) => {
+        const role = info.getValue();
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getRoleStyle(
+              role
+            )}`}
+          >
+            {role}
+          </span>
+        );
+      },
+    }),
+
+    columnHelper.accessor("created_at", {
+      header: "Tanggal Dibuat",
+      cell: (info) => {
+        const date = new Date(info.getValue());
+        return (
+          <span className="text-gray-500 text-sm">
+            {date.toLocaleString("id-ID", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        );
+      },
+    }),
+
+    // 🔥 ACTION COLUMN
+    columnHelper.display({
+      id: "actions",
+      header: "Aksi",
+      cell: ({ row }) => {
+        const user = row.original;
+
+        return (
+          <div className="flex gap-2">
+            {/* EDIT */}
+            <button
+              onClick={() => console.log("Edit", user)}
+              className="p-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-600 rounded-lg transition cursor-pointer"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+
+            {/* DELETE */}
+            <button
+              onClick={() => console.log("Delete", user)}
+              className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      },
+    }),
+  ];
 
   const table = useReactTable({
     data: data?.data ?? [],
@@ -50,71 +135,143 @@ export default function UserTable() {
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Header Tabel & Search */}
-      <div className="p-5 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h3 className="text-lg font-bold text-gray-800">Manajemen User</h3>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Cari nama atau email..."
-            className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 w-full md:w-64 transition-all"
-            onChange={(e) => setSearch(e.target.value)}
-          />
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+
+      {/* HEADER */}
+       <button
+            onClick={() => console.log("Add User")}
+            className="flex ml-5 mt-5 items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Tambah
+          </button>
+      <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <h3 className="text-lg font-bold text-gray-800">
+          Manajemen User
+        </h3>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          
+          {/* SEARCH */}
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Cari nama atau email..."
+              className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 w-full transition-all"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
         </div>
       </div>
 
-      {/* Body Tabel */}
+      {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id} className="bg-gray-50/50">
-                {headerGroup.headers.map(header => (
-                  <th key={header.id} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+
+          {/* THEAD */}
+          <thead className="bg-gray-50 border-b border-gray-200">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest border-r last:border-r-0"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-gray-50">
+
+          {/* TBODY */}
+          <tbody className="divide-y divide-gray-100">
             {isLoading ? (
-              <tr><td colSpan={3} className="p-20 text-center text-gray-400 animate-pulse">Memuat data...</td></tr>
-            ) : table.getRowModel().rows.map(row => (
-              <tr key={row.id} className="hover:bg-gray-50/80 transition-colors">
-                {row.getVisibleCells().map(cell => (
-                  <td key={cell.id} className="px-6 py-4 text-sm text-gray-700 font-medium">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+              <tr>
+                <td colSpan={5} className="p-20 text-center text-gray-400 animate-pulse">
+                  Memuat data...
+                </td>
               </tr>
-            ))}
+            ) : table.getRowModel().rows.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-10 text-center text-gray-400">
+                  Data tidak ditemukan
+                </td>
+              </tr>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className="hover:bg-indigo-50/60 transition-colors"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="px-6 py-4 text-sm text-gray-700 font-medium border-r last:border-r-0"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Footer & Pagination */}
-      <div className="p-5 border-t border-gray-50 flex items-center justify-between">
+      {/* FOOTER */}
+      <div className="p-5 border-t border-gray-100 flex items-center justify-between">
+        
         <p className="text-sm text-gray-500">
-          Menampilkan <span className="font-bold text-gray-800">{data?.data?.length || 0}</span> dari <span className="font-bold text-gray-800">{data?.meta?.total || 0}</span> user
+          Menampilkan{" "}
+          <span className="font-bold text-gray-800">
+            {data?.data?.length || 0}
+          </span>{" "}
+          dari{" "}
+          <span className="font-bold text-gray-800">
+            {data?.meta?.total || 0}
+          </span>{" "}
+          user
         </p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="p-2 bg-gray-50 rounded-lg disabled:opacity-30 hover:bg-gray-100 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="p-2 bg-gray-50 rounded-lg disabled:opacity-30 hover:bg-gray-100 transition-colors"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
+
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600">
+            Page{" "}
+            <span className="font-bold text-gray-800">
+              {pagination.pageIndex + 1}
+            </span>{" "}
+            of{" "}
+            <span className="font-bold text-gray-800">
+              {data?.meta?.pageCount || 1}
+            </span>
+          </span>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="p-2 bg-gray-50 rounded-lg disabled:opacity-30 hover:bg-gray-100 cursor-pointer"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
+            </button>
+
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="p-2 bg-gray-50 rounded-lg disabled:opacity-30 hover:bg-gray-100 cursor-pointer"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
