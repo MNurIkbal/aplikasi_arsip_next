@@ -1,14 +1,15 @@
 import Layout from "@/app/components/layout";
+import Breakbout from "@/app/components/ui/breakbout";
+import UserTable from "@/app/components/ui/UserTable";
 
-export default function users() {
+
+export default function UsersPage() {
   return (
-    <>
     <Layout>
-        <div className="bg-white p-6 rounded-xl shadow">
-      <h2>users Page</h2>
-      <p className="text-gray-600">This is the Arsip page content.</p>
-    </div>
+      <Breakbout menu="Users" />
+      <div className="mt-6">
+        <UserTable />
+      </div>
     </Layout>
-    </>
   );
 }
