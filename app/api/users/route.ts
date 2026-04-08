@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { sendTableResponse, sendError, successResponse } from "@/app/lib/response";
 import { getUsersService } from "@/app/services/UserService";
-import { validateUser } from "@/app/lib/validation";``
+import { validateUser } from "@/app/lib/validation";
 
 export async function GET(req: NextRequest) {
   try {
