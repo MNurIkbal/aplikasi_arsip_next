@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import { Camera, Eye, EyeOff, AlertCircle, Image as ImageIcon } from "lucide-react";
 import { validateUser } from "@/app/lib/validation";
+import Swal from "sweetalert2";
+import { UserService } from "@/app/services/fontend/Uservices";
 // Pastikan path import ini sesuai dengan lokasi file validation kamu
 
 
@@ -62,19 +64,72 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Jalankan validasi dari lib (Zod)
-    const validation = validateUser(formData, !!initialData);
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (validation.isValid) {
-      setErrors({});
-    
+  // 1. Jalankan validasi Zod (Client-side)
+  const validation = validateUser(formData, !!initialData);
+
+  if (!validation.isValid) {
+    setErrors(validation.errors);
+    return; // Stop jika tidak valid
+  }
+
+  // 2. Jika valid, bersihkan error dan tampilkan Loading
+  setErrors({});
+  
+  Swal.fire({
+    title: "Proses Menyimpan...",
+    text: "Mohon tunggu sebentar",
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  try {
+    let res;
+    if (initialData?.id) {
+      // Jika Anda punya service update
+      // res = await userService.update(initialData.id, formData);
     } else {
-      setErrors(validation.errors);
+      res = await UserService.create(formData);
     }
-  };
+
+    if (res.ok) {
+      // 3. Notifikasi Berhasil
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: "Data pengguna telah tersimpan.",
+        confirmButtonColor: "#6366F1", // Warna Indigo
+        borderRadius: "1rem",
+      });
+      
+      // Panggil fungsi refresh data atau tutup modal
+      onCancel(); 
+    } else {
+      const errorData = await res.json();
+      
+      // 4. Notifikasi Gagal (Server Error)
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menyimpan",
+        text: errorData.message || "Terjadi kesalahan pada server.",
+        confirmButtonColor: "#6366F1",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    // 5. Notifikasi Error Koneksi
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Koneksi ke server terputus.",
+      confirmButtonColor: "#6366F1",
+    });
+  }
+};
 
   const currentRoleValue = roleOptions.find((opt) => opt.value === formData.role) || roleOptions[0];
 

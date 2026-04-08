@@ -1,0 +1,76 @@
+
+export const UserService = {
+  /**
+   * Method untuk membuat user baru (Create)
+   * @param data - Objek dari form (name, email, password, role, image)
+   */
+  create: async (data: any) => {
+    const formData = new FormData();
+
+    // Masukkan data teks ke dalam FormData
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("role", data.role);
+
+    // Masukkan file gambar jika ada
+    if (data.image) {
+      formData.append("image", data.image);
+    }
+
+    const response = await fetch("/api/users", {
+      method: "POST",
+      body: formData, // Mengirim FormData secara otomatis mengatur header multipart/form-data
+    });
+
+    return response;
+  },
+
+  /**
+   * Method untuk memperbarui data user (Update)
+   * @param id - ID user yang akan diupdate
+   * @param data - Data baru dari form
+   */
+  update: async (id: string, data: any) => {
+    const formData = new FormData();
+    
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("role", data.role);
+
+    // Hanya kirim password jika user ingin mengubahnya (tidak kosong)
+    if (data.password) {
+      formData.append("password", data.password);
+    }
+
+    // Hanya kirim gambar baru jika user mengupload file baru
+    if (data.image) {
+      formData.append("image", data.image);
+    }
+
+    const response = await fetch(`/api/users/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    return response;
+  },
+
+  /**
+   * Method untuk menghapus user (Delete)
+   */
+  delete: async (id: string) => {
+    return await fetch(`/api/users/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Method untuk mengambil semua data user (Read)
+   */
+  getAll: async () => {
+    return await fetch("/api/users", {
+      method: "GET",
+    });
+  }
+};

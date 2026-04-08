@@ -13,13 +13,16 @@ async function main() {
   
   // Hapus data lama
   await prisma.user.deleteMany();
-
+  const now = new Date();
+  console.log(now);
+  
   // Generate data
   const users = Array.from({ length: 10 }).map((_, i) => ({
     name: faker.person.fullName(),
     email: faker.internet.email().toLowerCase(),
     password: passwordHash,
     role: i === 0 ? Role.admin : Role.pegawai,
+
   }));
 
   await prisma.user.createMany({ data: users });
