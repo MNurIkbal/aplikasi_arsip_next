@@ -12,15 +12,21 @@ interface MetaData {
 interface ApiResponse<T> {
   success: boolean;
   message: string;
-  data: T;
+  data: T ;
   meta?: MetaData;
+}
+
+interface ApiResponseSuccess<T> {
+  success: boolean;
+  message: string;
+  data: T | null;
 }
 
 /**
  * Helper untuk response sukses biasa (Object/Single Data)
  */
-export function sendResponse<T>(data: T, message: string = "Success", status: number = 200) {
-  const response: ApiResponse<T> = {
+export function successResponse<T>(data: T | null = null, message: string = "Success", status: number = 200) {
+  const response: ApiResponseSuccess<T> = {
     success: true,
     message,
     data,

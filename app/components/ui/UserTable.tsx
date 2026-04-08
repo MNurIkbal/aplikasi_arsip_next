@@ -14,8 +14,9 @@ import {
   ChevronRight,
   Pencil,
   Trash2,
-  Plus,
 } from "lucide-react";
+import UserForm from "./UserForm";
+import BaseModal from "./BaseModal";
 
 const columnHelper = createColumnHelper<any>();
 
@@ -134,17 +135,56 @@ export default function UserTable() {
     manualPagination: true,
   });
 
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: "ADD" | "EDIT" | "DELETE" | null;
+    data: any;
+  }>({
+    isOpen: false,
+    type: null,
+    data: null,
+  });
+
+  const closeModal = () => setModalConfig({ isOpen: false, type: null, data: null });
+
+  const handleAction = (data: any) => {
+    closeModal();
+  };
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
 
       {/* HEADER */}
-       <button
-            onClick={() => console.log("Add User")}
-            className="flex ml-5 mt-5 items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Tambah
-          </button>
+      <button 
+        onClick={() => setModalConfig({ isOpen: true, type: "ADD", data: null })}
+        className="bg-indigo-600 ml-4 mt-4 cursor-pointer text-white px-5 py-2 rounded-xl font-bold shadow-lg"
+      >
+        Tambah User Baru
+      </button>
+
+      {/* MODAL DYNAMIC MANIPULATION */}
+      <BaseModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        size="2xl"
+        title={
+          modalConfig.type === "ADD" ? "Buat User Baru" : 
+          modalConfig.type === "EDIT" ? "Perbarui Data User" : "Hapus Data"
+        }
+      >
+        {/* Render Form Berdasarkan Type */}
+        {modalConfig.type === "DELETE" ? (
+           <div className="text-center">
+             <p>Yakin ingin menghapus <b>{modalConfig.data?.name}</b>?</p>
+             <button onClick={() => handleAction(modalConfig.data)} className="bg-red-600 text-white px-4 py-2 rounded-xl mt-4 w-full">Ya, Hapus</button>
+           </div>
+        ) : (
+          <UserForm 
+            initialData={modalConfig.data} 
+            onSubmit={handleAction} 
+            onCancel={closeModal} 
+          />
+        )}
+      </BaseModal>
       <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         
         <h3 className="text-lg font-bold text-gray-800">
@@ -158,7 +198,7 @@ export default function UserTable() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari nama atau email..."
+              placeholder="Search"
               className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 w-full transition-all"
               onChange={(e) => setSearch(e.target.value)}
             />
