@@ -6,7 +6,7 @@ CREATE TABLE `User` (
     `password` VARCHAR(191) NOT NULL,
     `role` ENUM('admin', 'pegawai') NOT NULL DEFAULT 'pegawai',
     `image` VARCHAR(191) NULL,
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NULL,
     `deleted_at` DATETIME NULL,
 

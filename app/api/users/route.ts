@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       imageUrl = `/uploads/${Date.now()}-${image.name}`;
     }
     const finalRole = role.toLowerCase() as Role;
-
+ 
     // 7. INSERT KE DATABASE MENGGUNAKAN PRISMA
     const newUser = await prisma.user.create({
       data: {
@@ -76,10 +76,10 @@ export async function POST(req: Request) {
         email: email,
         password: hashedPassword, // Simpan yang sudah di-hash
         role: finalRole,
-        image: imageUrl, // Sesuaikan nama kolom di schema.prisma kamu
+        image: imageUrl,
       },
     });
-
+    
     // 8. Berikan Respon Sukses
     // Jangan kirim balik field password ke frontend
     return successResponse(null, "User berhasil dibuat", 201);

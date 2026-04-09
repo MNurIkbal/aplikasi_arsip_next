@@ -16,6 +16,8 @@
     "@tanstack/react-table": "^8.21.3",
     "apexcharts": "^5.10.4",
     "bcrypt": "^6.0.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "jose": "^6.2.2",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.3",
@@ -46,6 +48,7 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
