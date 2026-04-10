@@ -1,21 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { UseUsersProps } from "../types/UserType";
 
-export const getUser = ({ pageIndex, pageSize, search }: UseUsersProps) => {
+export const getUser = ({
+  pageIndex,
+  pageSize,
+  search,
+}: UseUsersProps) => {
   return useQuery({
-    // queryKey sangat penting untuk auto-refetch saat page/search berubah
-    queryKey: ["users", pageIndex, pageSize, search], 
+    // 🔥 penting: masukin sorting ke queryKey
+    queryKey: ["users", pageIndex, pageSize, search],
+
     queryFn: async () => {
-      const res = await fetch(
-        `/api/users?page=${pageIndex + 1}&limit=${pageSize}&search=${search}`
-      );
-      
+      const params = new URLSearchParams({
+        page: String(pageIndex + 1),
+        limit: String(pageSize),
+        search: search || "",
+      });
+
+      const res = await fetch(`/api/users?${params.toString()}`);
+
       if (!res.ok) {
         throw new Error("Gagal mengambil data user");
       }
+
       return res.json();
     },
-    // Opsi tambahan agar data tidak dianggap basi terlalu cepat
-    staleTime: 5000, 
+
+    staleTime: 5000,
   });
 };

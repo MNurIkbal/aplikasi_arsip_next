@@ -1,10 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
+import { GetUsersParams } from "../types/UserType";
 
-type GetUsersParams = {
-  page?: number;
-  limit?: number;
-  search?: string;
-};
 
 export async function getUsersService(params: GetUsersParams) {
   const page = Math.max(1, params.page || 1);

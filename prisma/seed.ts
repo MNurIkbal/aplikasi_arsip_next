@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
 export const getJakartaDate = () => {
   const now = new Date();
   // Ambil offset timezone dalam menit (untuk Jakarta biasanya -420)
-  const offset = now.getTimezoneOffset(); 
   
   // Paksa geser waktu sebanyak 7 jam (420 menit)
   // dikurangi offset lokal agar netral, lalu ditambah 7 jam

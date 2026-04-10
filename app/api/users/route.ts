@@ -6,6 +6,8 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/app/lib/prisma";
 import { Role } from "@prisma/client";
 import { nowWib } from "@/app/lib/helper";
+import { writeFile } from "fs/promises";
+import path from "path";
 
 export async function GET(req: NextRequest) {
   try {
@@ -52,6 +54,7 @@ export async function POST(req: Request) {
     // 4. Cek apakah email sudah terdaftar (Penting untuk keamanan database)
     const existingUser = await prisma.user.findUnique({
       where: { email },
+      
     });
 
     if (existingUser) {
@@ -64,14 +67,19 @@ export async function POST(req: Request) {
     // 6. Logika Simpan Gambar (Opsional)
     let imageUrl = null;
     if (image && image.size > 0) {
-      // Di sini biasanya upload ke Cloudinary/S3 atau simpan lokal
-      // Untuk contoh ini, kita anggap simpan path string saja
+      const bytes = await image.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const fileName = `${Date.now()}-${image.name}`;
+      const filePath = path.join(process.cwd(), "public/uploads", fileName);
+
+      await writeFile(filePath, buffer);
       imageUrl = `/uploads/${Date.now()}-${image.name}`;
     }
     const finalRole = role.toLowerCase() as Role;
  
     // 7. INSERT KE DATABASE MENGGUNAKAN PRISMA
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name: name,
         email: email,

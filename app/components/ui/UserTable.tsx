@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
   createColumnHelper,
+  SortingState,
+  getSortedRowModel,
 } from "@tanstack/react-table";
 import {
   Search,
@@ -18,6 +19,7 @@ import {
 import UserForm from "./UserForm";
 import BaseModal from "./BaseModal";
 import { getUser } from "@/app/hooks/UserHooks";
+import { formatDateTime } from "@/app/lib/helper";
 
 const columnHelper = createColumnHelper<any>();
 
@@ -38,6 +40,7 @@ export default function UserTable() {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const [search, setSearch] = useState("");
 
@@ -50,16 +53,30 @@ export default function UserTable() {
 
   // 🔥 Columns
   const columns = [
+    columnHelper.display({
+      id: "no",
+      header: "No",
+      enableSorting: true,
+      cell: ({ row, table }) => {
+        const pageIndex = table.getState().pagination.pageIndex;
+        const pageSize = table.getState().pagination.pageSize;
+
+        return pageIndex * pageSize + row.index + 1;
+      },
+    }),
     columnHelper.accessor("name", {
       header: "Nama Lengkap",
+      enableSorting: true,
     }),
 
     columnHelper.accessor("email", {
       header: "Email",
+      enableSorting: true,
     }),
 
     columnHelper.accessor("role", {
       header: "Role",
+      enableSorting: true,
       cell: (info) => {
         const role = info.getValue();
         return (
@@ -75,25 +92,13 @@ export default function UserTable() {
     }),
 
     columnHelper.accessor("created_at", {
-  header: "Tanggal Dibuat",
-  cell: (info) => {
-    const value = info.getValue();
-    if (!value) return "-";
-    
-    const date = new Date(value);
-    return (
-      <span className="text-gray-500 text-sm" suppressHydrationWarning>
-        {date.toLocaleString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-      </span>
-    );
-  },
-}),
+      header: "Tanggal Dibuat",
+      enableSorting: true,
+      cell: (info) => {
+        const value = info.getValue();
+        return formatDateTime(value);
+      },
+    }),
 
     // 🔥 ACTION COLUMN
     columnHelper.display({
@@ -107,7 +112,7 @@ export default function UserTable() {
             {/* EDIT */}
             <button
               onClick={() => console.log("Edit", user)}
-              className="p-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-600 rounded-lg transition cursor-pointer"
+              className="p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition cursor-pointer"
             >
               <Pencil className="w-4 h-4" />
             </button>
@@ -129,9 +134,11 @@ export default function UserTable() {
     data: data?.data ?? [],
     columns,
     pageCount: data?.meta?.pageCount ?? -1,
-    state: { pagination },
+    state: { pagination, sorting },
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
   });
 
@@ -154,7 +161,7 @@ export default function UserTable() {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
 
       {/* HEADER */}
-      <button 
+      <button
         onClick={() => setModalConfig({ isOpen: true, type: "ADD", data: null })}
         className="bg-indigo-600 ml-4 mt-4 cursor-pointer text-white px-5 py-2 rounded-xl font-bold shadow-lg"
       >
@@ -167,32 +174,32 @@ export default function UserTable() {
         onClose={closeModal}
         size="2xl"
         title={
-          modalConfig.type === "ADD" ? "Buat User Baru" : 
-          modalConfig.type === "EDIT" ? "Perbarui Data User" : "Hapus Data"
+          modalConfig.type === "ADD" ? "Buat User Baru" :
+            modalConfig.type === "EDIT" ? "Perbarui Data User" : "Hapus Data"
         }
       >
         {/* Render Form Berdasarkan Type */}
         {modalConfig.type === "DELETE" ? (
-           <div className="text-center">
-             <p>Yakin ingin menghapus <b>{modalConfig.data?.name}</b>?</p>
-             <button onClick={() => handleAction(modalConfig.data)} className="bg-red-600 text-white px-4 py-2 rounded-xl mt-4 w-full">Ya, Hapus</button>
-           </div>
+          <div className="text-center">
+            <p>Yakin ingin menghapus <b>{modalConfig.data?.name}</b>?</p>
+            <button onClick={() => handleAction(modalConfig.data)} className="bg-red-600 text-white px-4 py-2 rounded-xl mt-4 w-full">Ya, Hapus</button>
+          </div>
         ) : (
-          <UserForm 
-            initialData={modalConfig.data} 
-            onSubmit={handleAction} 
-            onCancel={closeModal} 
+          <UserForm
+            initialData={modalConfig.data}
+            onSubmit={handleAction}
+            onCancel={closeModal}
           />
         )}
       </BaseModal>
       <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        
+
         <h3 className="text-lg font-bold text-gray-800">
           Manajemen User
         </h3>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
-          
+
           {/* SEARCH */}
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -218,12 +225,28 @@ export default function UserTable() {
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest border-r last:border-r-0"
+                    onClick={header.column.getToggleSortingHandler()}
+                    className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest border-r last:border-r-0 cursor-pointer select-none"
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    <div className="flex items-center justify-between w-full">
+
+                      {/* Title */}
+                      <span>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </span>
+
+                      {/* Sort Icon */}
+                      <span className="ml-2 w-4 text-right">
+                        {{
+                          asc: "↑",
+                          desc: "↓",
+                        }[header.column.getIsSorted() as string] ?? "↕"}
+                      </span>
+
+                    </div>
                   </th>
                 ))}
               </tr>
@@ -270,7 +293,7 @@ export default function UserTable() {
 
       {/* FOOTER */}
       <div className="p-5 border-t border-gray-100 flex items-center justify-between">
-        
+
         <p className="text-sm text-gray-500">
           Menampilkan{" "}
           <span className="font-bold text-gray-800">
