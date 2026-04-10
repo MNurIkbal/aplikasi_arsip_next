@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import UserForm from "./UserForm";
 import BaseModal from "./BaseModal";
+import { getUser } from "@/app/hooks/UserHooks";
 
 const columnHelper = createColumnHelper<any>();
 
@@ -41,14 +42,10 @@ export default function UserTable() {
   const [search, setSearch] = useState("");
 
   // 🔥 Fetch Data
-  const { data, isLoading } = useQuery({
-    queryKey: ["users", pagination, search],
-    queryFn: async () => {
-      const res = await fetch(
-        `/api/users?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}&search=${search}`
-      );
-      return res.json();
-    },
+  const { data, isLoading, isError } = getUser({
+    pageIndex: pagination.pageIndex,
+    pageSize: pagination.pageSize,
+    search: search,
   });
 
   // 🔥 Columns
@@ -78,22 +75,25 @@ export default function UserTable() {
     }),
 
     columnHelper.accessor("created_at", {
-      header: "Tanggal Dibuat",
-      cell: (info) => {
-        const date = new Date(info.getValue());
-        return (
-          <span className="text-gray-500 text-sm">
-            {date.toLocaleString("id-ID", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
-        );
-      },
-    }),
+  header: "Tanggal Dibuat",
+  cell: (info) => {
+    const value = info.getValue();
+    if (!value) return "-";
+    
+    const date = new Date(value);
+    return (
+      <span className="text-gray-500 text-sm" suppressHydrationWarning>
+        {date.toLocaleString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </span>
+    );
+  },
+}),
 
     // 🔥 ACTION COLUMN
     columnHelper.display({

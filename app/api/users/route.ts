@@ -5,6 +5,7 @@ import { validateUser } from "@/app/lib/validation";
 import bcrypt from "bcrypt";
 import { prisma } from "@/app/lib/prisma";
 import { Role } from "@prisma/client";
+import { nowWib } from "@/app/lib/helper";
 
 export async function GET(req: NextRequest) {
   try {
@@ -77,6 +78,7 @@ export async function POST(req: Request) {
         password: hashedPassword, // Simpan yang sudah di-hash
         role: finalRole,
         image: imageUrl,
+        created_at: nowWib(), // Gunakan helper untuk waktu WIB
       },
     });
     

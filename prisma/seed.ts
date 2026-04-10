@@ -5,11 +5,22 @@ import * as bcrypt from "bcrypt";
 // Biarkan kosong, Prisma akan otomatis baca dari .env atau prisma.config.ts
 const prisma = new PrismaClient();
 
-
+export const getJakartaDate = () => {
+  const now = new Date();
+  // Ambil offset timezone dalam menit (untuk Jakarta biasanya -420)
+  const offset = now.getTimezoneOffset(); 
+  
+  // Paksa geser waktu sebanyak 7 jam (420 menit)
+  // dikurangi offset lokal agar netral, lalu ditambah 7 jam
+  const jakartaTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+  
+  return jakartaTime;
+};
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 10);
 
   console.log("--- Memulai Seeding ---");
+  console.log(getJakartaDate());
   
   // Hapus data lama
   await prisma.user.deleteMany();
@@ -20,6 +31,7 @@ async function main() {
     email: faker.internet.email().toLowerCase(),
     password: passwordHash,
     role: i === 0 ? Role.admin : Role.pegawai,
+    created_at: getJakartaDate(), // Gunakan helper untuk waktu WIB
   }));
 
   await prisma.user.createMany({ data: users });

@@ -6,6 +6,8 @@ import { Camera, Eye, EyeOff, AlertCircle, Image as ImageIcon } from "lucide-rea
 import { validateUser } from "@/app/lib/validation";
 import Swal from "sweetalert2";
 import { UserService } from "@/app/services/fontend/Uservices";
+import { getUser } from "@/app/hooks/UserHooks";
+import { useQueryClient } from "@tanstack/react-query";
 // Pastikan path import ini sesuai dengan lokasi file validation kamu
 
 
@@ -33,6 +35,8 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
     { value: "Pegawai", label: "Pegawai" },
     { value: "Admin", label: "Admin" },
   ];
+
+  const queryClient = useQueryClient();
 
   // Sinkronisasi data saat mode Edit
   useEffect(() => {
@@ -89,21 +93,25 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
 
   try {
     let res;
-    if (initialData?.id) {
-      // Jika Anda punya service update
-      // res = await userService.update(initialData.id, formData);
-    } else {
-      res = await UserService.create(formData);
-    }
+    // if (initialData?.id) {
+    //   // Jika Anda punya service update
+    //   // res = await userService.update(initialData.id, formData);
+    // } else {
+    // }
+    res = await UserService.create(formData);
 
     if (res.ok) {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       // 3. Notifikasi Berhasil
       await Swal.fire({
         icon: "success",
         title: "Berhasil!",
         text: "Data pengguna telah tersimpan.",
-        confirmButtonColor: "#6366F1", // Warna Indigo
-        borderRadius: "1rem",
+        confirmButtonColor: "#6366F1",
+        // Gunakan customClass untuk styling tambahan
+        customClass: {
+          popup: 'rounded-xl', // Jika kamu pakai Tailwind
+        }
       });
       
       // Panggil fungsi refresh data atau tutup modal
