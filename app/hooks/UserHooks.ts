@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { UseUsersProps } from "../types/UserType";
+import { UseUsersProps } from "../types/GlobalType";
 
 export const getUser = ({
   pageIndex,

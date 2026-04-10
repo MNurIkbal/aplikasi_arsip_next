@@ -9,3 +9,9 @@ export interface GetUsersParams  {
   limit?: number;
   search?: string;
 };
+
+export interface AuthState {
+  user: any;
+  loading: boolean;
+  error: string | null;
+}

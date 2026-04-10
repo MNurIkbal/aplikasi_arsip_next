@@ -1,5 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
-import { GetUsersParams } from "../types/UserType";
+import { GetUsersParams } from "../types/GlobalType";
 
 
 export async function getUsersService(params: GetUsersParams) {

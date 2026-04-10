@@ -1,10 +1,6 @@
+import { AuthState } from "@/app/types/GlobalType";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-interface AuthState {
-  user: any;
-  loading: boolean;
-  error: string | null;
-}
 
 // Ambil user dari localStorage (Client-side only)
 const getInitialUser = () => {

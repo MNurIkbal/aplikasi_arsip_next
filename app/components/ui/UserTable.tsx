@@ -96,7 +96,9 @@ export default function UserTable() {
       enableSorting: true,
       cell: (info) => {
         const value = info.getValue();
+
         return formatDateTime(value);
+        
       },
     }),
 
