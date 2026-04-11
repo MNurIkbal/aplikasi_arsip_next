@@ -27,9 +27,9 @@ const columnHelper = createColumnHelper<any>();
 // 🔥 Style Role
 const getRoleStyle = (role: string) => {
   switch (role) {
-    case "admin":
+    case "Admin":
       return "bg-red-50 text-red-600";
-    case "user":
+    case "Pegawai":
       return "bg-green-50 text-green-600";
     default:
       return "bg-gray-100 text-gray-600";

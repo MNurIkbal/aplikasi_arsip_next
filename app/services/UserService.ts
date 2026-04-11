@@ -76,7 +76,8 @@ export async function store(
     imageUrl = `/uploads/${fileName}`;
   }
 
-  const finalRole = role.toLowerCase() as Role;
+  const finalRole = role as Role;
+
 
   // 7. INSERT KE DATABASE MENGGUNAKAN PRISMA
   await prisma.user.create({
