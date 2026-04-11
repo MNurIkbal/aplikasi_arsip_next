@@ -20,6 +20,7 @@ import UserForm from "./UserForm";
 import BaseModal from "./BaseModal";
 import { getUser } from "@/app/hooks/UserHooks";
 import { formatDateTime } from "@/app/lib/helper";
+import Image from "next/image";
 
 const columnHelper = createColumnHelper<any>();
 
@@ -64,6 +65,25 @@ export default function UserTable() {
         return pageIndex * pageSize + row.index + 1;
       },
     }),
+    columnHelper.accessor("image", {
+      header: "Image",
+      enableSorting: false,
+      cell: (info) => {
+        const img = info.getValue();
+        console.log(img);
+        
+        return (
+          <Image
+            src={img}
+            alt="User Image"
+            width={60}
+            height={60}
+            className="rounded-full object-cover"
+          />
+        );
+      },
+    }),
+
     columnHelper.accessor("name", {
       header: "Nama Lengkap",
       enableSorting: true,

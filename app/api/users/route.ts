@@ -1,13 +1,7 @@
 import { NextRequest } from "next/server";
 import { sendTableResponse, sendError, successResponse } from "@/app/lib/response";
-import { getUsersService } from "@/app/services/UserService";
+import { getUsersService, store } from "@/app/services/UserService";
 import { validateUser } from "@/app/lib/validation";
-import bcrypt from "bcrypt";
-import { prisma } from "@/app/lib/prisma";
-import { Role } from "@prisma/client";
-import { nowWib } from "@/app/lib/helper";
-import { writeFile } from "fs/promises";
-import path from "path";
 
 export async function GET(req: NextRequest) {
   try {
@@ -51,48 +45,14 @@ export async function POST(req: Request) {
       return sendError("Validasi gagal", 400, validation.errors);
     }
 
-    // 4. Cek apakah email sudah terdaftar (Penting untuk keamanan database)
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-      
-    });
+    const create = await store(name, email, password, role, image);
 
-    if (existingUser) {
-      return sendError("Email sudah digunakan", 400);
+
+    if(create) {
+      return successResponse(null, "User berhasil dibuat", 201);
+    } else {
+      return sendError("Data Gagal dibuat", 500);
     }
-
-    // 5. Hash Password (Wajib sebelum simpan ke DB)
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 6. Logika Simpan Gambar (Opsional)
-    let imageUrl = null;
-    if (image && image.size > 0) {
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const fileName = `${Date.now()}-${image.name}`;
-      const filePath = path.join(process.cwd(), "public/uploads", fileName);
-
-      await writeFile(filePath, buffer);
-      imageUrl = `/uploads/${Date.now()}-${image.name}`;
-    }
-    const finalRole = role.toLowerCase() as Role;
- 
-    // 7. INSERT KE DATABASE MENGGUNAKAN PRISMA
-    await prisma.user.create({
-      data: {
-        name: name,
-        email: email,
-        password: hashedPassword, // Simpan yang sudah di-hash
-        role: finalRole,
-        image: imageUrl,
-        created_at: nowWib(), // Gunakan helper untuk waktu WIB
-      },
-    });
-    
-    // 8. Berikan Respon Sukses
-    // Jangan kirim balik field password ke frontend
-    return successResponse(null, "User berhasil dibuat", 201);
 
   } catch (error: any) {
     console.error("API Error:", error);

@@ -8,6 +8,7 @@ import { logout } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import Image from "next/image";
 
 const MySwal = withReactContent(Swal);
 
@@ -72,6 +73,7 @@ export default function Header() {
   // Ini mencegah error "Text content did not match"
   const displayName = mounted ? (user?.name || "User") : "User";
   const displayRole = mounted ? (user?.role || "No Role") : "No Role";
+  const displayImage = mounted ? (user?.image || null) : null;
 
   return (
     <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center relative z-40">
@@ -83,7 +85,13 @@ export default function Header() {
           className="flex items-center gap-2 p-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200"
         >
           <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-            <User className="w-5 h-5" />
+            <Image
+            src={displayImage || "/default-avatar.png"}
+            alt="User Image"
+            width={60}
+            height={60}
+            className="rounded-full object-cover"
+          />
           </div>
           
           {/* Gunakan variabel displayName yang sudah diproteksi mounted state */}
