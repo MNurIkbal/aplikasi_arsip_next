@@ -93,3 +93,46 @@ export async function store(
 
   return successResponse(null, "User berhasil dibuat", 201);
 }
+
+export async function update(
+  id: number, // Tambahkan parameter ID
+  name: string,
+  image: File | null,
+) {
+  // 1. Cari user lama untuk mendapatkan URL gambar lama jika ada
+  const existingUser = await prisma.user.findUnique({
+    where: { id: id }
+  });
+
+  if (!existingUser) {
+    throw new Error("User tidak ditemukan");
+  }
+
+  // 2. Logika Simpan Gambar
+  let imageUrl = existingUser.image; // Default gunakan gambar lama
+
+  if (image && image.size > 0) {
+    const bytes = await image.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const fileName = `${Date.now()}-${image.name}`;
+    const filePath = path.join(process.cwd(), "public/uploads", fileName);
+    await writeFile(filePath, buffer);
+
+    imageUrl = `/uploads/${fileName}`;
+  }
+
+  // 3. UPDATE KE DATABASE MENGGUNAKAN PRISMA
+  await prisma.user.update({
+    where: {
+      id: id, // Menentukan data mana yang diupdate
+    },
+    data: {
+      name: name,
+      image: imageUrl, // Update URL baru jika ada, jika tidak tetap yang lama
+      updated_at: nowWib(),
+    },
+  });
+
+  return successResponse(null, "User berhasil diperbarui", 200);
+}

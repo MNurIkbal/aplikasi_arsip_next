@@ -86,7 +86,7 @@ export default function Header() {
         >
           <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
             <Image
-            src={displayImage || "/default-avatar.png"}
+            src={displayImage || "/uploads/1775880667188-user.png"}
             alt="User Image"
             width={60}
             height={60}

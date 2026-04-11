@@ -93,12 +93,13 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
 
     try {
       let res;
-      // if (initialData?.id) {
-      //   // Jika Anda punya service update
-      //   // res = await userService.update(initialData.id, formData);
-      // } else {
-      // }
-      res = await UserService.create(formData);
+      if (initialData?.id) {
+        // Jika Anda punya service update
+        const { name, image } = formData;
+        res = await UserService.update(initialData.id, name, image);
+      } else {
+        res = await UserService.create(formData);
+      }
 
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: ["users"] });
