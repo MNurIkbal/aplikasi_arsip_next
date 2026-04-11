@@ -7,6 +7,6 @@
 
 */
 -- AlterTable
-ALTER TABLE `user` MODIFY `created_at` DATETIME NULL DEFAULT NOW(),
-    MODIFY `updated_at` DATETIME NULL DEFAULT NOW() ON UPDATE NOW(),
+ALTER TABLE `user` MODIFY `created_at` DATETIME NULL,
+    MODIFY `updated_at` DATETIME NULL,
     MODIFY `deleted_at` DATETIME NULL;

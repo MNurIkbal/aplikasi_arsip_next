@@ -31,7 +31,7 @@ export async function proxy(req: NextRequest) {
       const role = payload.role as string; // Ambil role dari payload JWT
 
       // Logika Role Pegawai
-      if (role === "pegawai") {
+      if (role === "Pegawai") {
         // Pegawai dilarang masuk ke /users dan /penyimpanan
         const isForbiddenForPegawai = pathname.startsWith("/users") || pathname.startsWith("/penyimpanan");
         

@@ -70,8 +70,6 @@ export default function UserTable() {
       enableSorting: false,
       cell: (info) => {
         const img = info.getValue();
-        console.log(img);
-        
         return (
           <Image
             src={img}
@@ -118,7 +116,7 @@ export default function UserTable() {
         const value = info.getValue();
 
         return formatDateTime(value);
-        
+
       },
     }),
 
@@ -133,7 +131,13 @@ export default function UserTable() {
           <div className="flex gap-2">
             {/* EDIT */}
             <button
-              onClick={() => console.log("Edit", user)}
+              onClick={() =>
+                setModalConfig({
+                  isOpen: true,
+                  type: "EDIT",
+                  data: user // Mengirimkan data user ke form
+                })
+              }
               className="p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition cursor-pointer"
             >
               <Pencil className="w-4 h-4" />
@@ -197,22 +201,15 @@ export default function UserTable() {
         size="2xl"
         title={
           modalConfig.type === "ADD" ? "Buat User Baru" :
-            modalConfig.type === "EDIT" ? "Perbarui Data User" : "Hapus Data"
+            modalConfig.type === "EDIT" ? "Update Data User" : "Hapus Data"
         }
       >
         {/* Render Form Berdasarkan Type */}
-        {modalConfig.type === "DELETE" ? (
-          <div className="text-center">
-            <p>Yakin ingin menghapus <b>{modalConfig.data?.name}</b>?</p>
-            <button onClick={() => handleAction(modalConfig.data)} className="bg-red-600 text-white px-4 py-2 rounded-xl mt-4 w-full">Ya, Hapus</button>
-          </div>
-        ) : (
-          <UserForm
+        <UserForm
             initialData={modalConfig.data}
             onSubmit={handleAction}
             onCancel={closeModal}
           />
-        )}
       </BaseModal>
       <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
 

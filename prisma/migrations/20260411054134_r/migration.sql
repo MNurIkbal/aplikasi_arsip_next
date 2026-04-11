@@ -4,9 +4,9 @@ CREATE TABLE `User` (
     `name` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
-    `role` ENUM('admin', 'pegawai') NOT NULL DEFAULT 'pegawai',
+    `role` ENUM('Admin', 'Pegawai') NOT NULL DEFAULT 'Pegawai',
     `image` VARCHAR(191) NULL,
-    `created_at` DATETIME NOT NULL,
+    `created_at` DATETIME NULL,
     `updated_at` DATETIME NULL,
     `deleted_at` DATETIME NULL,
 

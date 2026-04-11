@@ -8,8 +8,8 @@ generator client {
 }
 
 enum Role {
-  admin
-  pegawai
+  Admin
+  Pegawai
 }
 
 model User {
@@ -17,7 +17,7 @@ model User {
   name       String
   email      String   @unique
   password   String
-  role       Role     @default(pegawai)
+  role       Role     @default(Pegawai)
   image  String?
 
   created_at DateTime? @db.DateTime

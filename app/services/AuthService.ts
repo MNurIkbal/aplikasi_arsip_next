@@ -8,6 +8,7 @@ export async function validateUserLogin(email: string, password: any) {
   const user = await prisma.user.findUnique({
     where: { email },
   });
+  
 
   if (!user) {
     throw new Error("User tidak ditemukan");
