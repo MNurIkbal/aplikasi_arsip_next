@@ -46,17 +46,6 @@ export const UserService = {
       body: formData,
     });
 
-    const result = await response.json();
-
     return response;
-  },
-
-  /**
-   * Method untuk menghapus user (Delete)
-   */
-  delete: async (id: string) => {
-    return await fetch(`/api/users/${id}`, {
-      method: "DELETE",
-    });
-  },
+  }
 };

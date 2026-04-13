@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
-import { Roboto_Slab } from "next/font/google";
+import { Roboto_Slab, Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "Aplikasi Arsip",
@@ -21,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en">
+      lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${robotoSlab.variable} antialiased font-serif`}>
         <Providers>{children}</Providers>
       </body>
