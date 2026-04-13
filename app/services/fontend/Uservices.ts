@@ -40,13 +40,13 @@ export const UserService = {
       formData.append("image", data.image);
     }
 
+
     const response = await fetch(`/api/users/${id}`, {
       method: "PUT",
       body: formData,
     });
 
     const result = await response.json();
-    console.log(result);
 
     return response;
   },
@@ -59,13 +59,4 @@ export const UserService = {
       method: "DELETE",
     });
   },
-
-  /**
-   * Method untuk mengambil semua data user (Read)
-   */
-  getAll: async () => {
-    return await fetch("/api/users", {
-      method: "GET",
-    });
-  }
 };

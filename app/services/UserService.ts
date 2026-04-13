@@ -100,7 +100,7 @@ export async function update(
   image?: File | null,
 ) {
   // 1. Cari user lama untuk mendapatkan URL gambar lama jika ada
-  return successResponse(id, "User berhasil diperbarui", 200);
+  
   const existingUser = await prisma.user.findUnique({
     where: { id: id }
   });

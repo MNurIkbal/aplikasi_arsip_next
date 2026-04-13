@@ -71,13 +71,16 @@ export default function UserTable() {
       cell: (info) => {
         const img = info.getValue();
         return (
-          <Image
-            src={img}
-            alt="User Image"
-            width={60}
-            height={60}
-            className="rounded-full object-cover"
-          />
+          <div className="relative w-[60px] h-[60px]">
+            <Image
+              src={img}
+              alt="User Image"
+              fill
+              // Tambahkan baris ini
+              sizes="60px"
+              className="rounded-full object-cover"
+            />
+          </div>
         );
       },
     }),
@@ -206,10 +209,10 @@ export default function UserTable() {
       >
         {/* Render Form Berdasarkan Type */}
         <UserForm
-            initialData={modalConfig.data}
-            onSubmit={handleAction}
-            onCancel={closeModal}
-          />
+          initialData={modalConfig.data}
+          onSubmit={handleAction}
+          onCancel={closeModal}
+        />
       </BaseModal>
       <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
