@@ -38,12 +38,12 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
 
   const queryClient = useQueryClient();
 
-  // Sinkronisasi data saat mode Edit
+
   useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
-        password: "" // Kosongkan password saat edit untuk keamanan
+        password: ""
       });
       setImagePreview(initialData.image_url || null);
     } else {
