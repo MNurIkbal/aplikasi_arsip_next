@@ -97,12 +97,14 @@ export async function store(
 export async function update(
   id: number, // Tambahkan parameter ID
   name: string,
-  image: File | null,
+  image?: File | null,
 ) {
   // 1. Cari user lama untuk mendapatkan URL gambar lama jika ada
+  return successResponse(id, "User berhasil diperbarui", 200);
   const existingUser = await prisma.user.findUnique({
     where: { id: id }
   });
+  
 
   if (!existingUser) {
     throw new Error("User tidak ditemukan");

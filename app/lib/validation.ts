@@ -15,11 +15,13 @@ export const loginSchema = z.object({
 export const validateUser = (data: any, isEdit: boolean) => {
   const schema = z.object({
     name: z.string().min(1, "Nama wajib diisi"),
-    email: z.string().min(1, "Email  wajib diisi").email("Format email salah"),
+    email: isEdit 
+      ? z.string().optional().or(z.literal(""))
+      : z.string().min(1, "Email  wajib diisi").email("Format email salah"),
     password: isEdit 
-      ? z.string().optional().or(z.literal("")) // Boleh kosong atau string kosong saat edit
+      ? z.string().optional().or(z.literal(""))
       : z.string().min(6, "Password minimal 6 karakter"),
-    role: z.string().min(1, "Role wajib dipilih"),
+    role: isEdit ? z.string().optional().or(z.literal("")) : z.string().min(1, "Role wajib dipilih"),
     
     // VALIDASI FOTO
     image: isEdit

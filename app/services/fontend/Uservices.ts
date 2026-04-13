@@ -31,17 +31,9 @@ export const UserService = {
    * @param id - ID user yang akan diupdate
    * @param data - Data baru dari form
    */
-  update: async (id: string, data: any) => {
+  update: async (id: number, data: any) => {
     const formData = new FormData();
-    
     formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("role", data.role);
-
-    // Hanya kirim password jika user ingin mengubahnya (tidak kosong)
-    if (data.password) {
-      formData.append("password", data.password);
-    }
 
     // Hanya kirim gambar baru jika user mengupload file baru
     if (data.image) {
@@ -52,6 +44,9 @@ export const UserService = {
       method: "PUT",
       body: formData,
     });
+
+    const result = await response.json();
+    console.log(result);
 
     return response;
   },

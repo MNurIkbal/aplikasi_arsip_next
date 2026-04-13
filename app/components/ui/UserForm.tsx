@@ -96,7 +96,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
       if (initialData?.id) {
         // Jika Anda punya service update
         const { name, image } = formData;
-        res = await UserService.update(initialData.id, name, image);
+        res = await UserService.update(initialData.id, { name, image });
       } else {
         res = await UserService.create(formData);
       }
