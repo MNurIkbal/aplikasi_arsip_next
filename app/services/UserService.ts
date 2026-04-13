@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { nowWib } from "../lib/helper";
 import path from "path";
 import { writeFile } from "fs/promises";
+import { revalidatePath } from "next/cache";
 
 export async function getUsersService(params: GetUsersParams) {
   const page = Math.max(1, params.page || 1);
@@ -155,7 +156,7 @@ export async function deleteUser(id: number) {
       deleted_at: nowWib(),
     },
   });
-  
+  revalidatePath("/users");
   return successResponse(null, "User berhasil dihapus", 200);
 }
 
