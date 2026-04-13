@@ -6,9 +6,7 @@ import { Camera, Eye, EyeOff, AlertCircle, Image as ImageIcon } from "lucide-rea
 import { validateUser } from "@/app/lib/validation";
 import Swal from "sweetalert2";
 import { UserService } from "@/app/services/fontend/Uservices";
-import { getUser } from "@/app/hooks/UserHooks";
 import { useQueryClient } from "@tanstack/react-query";
-// Pastikan path import ini sesuai dengan lokasi file validation kamu
 
 
 interface UserFormProps {
@@ -100,6 +98,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
       } else {
         res = await UserService.create(formData);
       }
+      const data = await res.json();
 
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -107,7 +106,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
         await Swal.fire({
           icon: "success",
           title: "Berhasil!",
-          text: "Data pengguna telah tersimpan.",
+          text: data.message || "Data berhasil disimpan.",
           confirmButtonColor: "#6366F1",
           // Gunakan customClass untuk styling tambahan
           customClass: {
@@ -129,7 +128,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
         });
       }
     } catch (err) {
-      
+
       // 5. Notifikasi Error Koneksi
       Swal.fire({
         icon: "error",

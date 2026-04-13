@@ -1,5 +1,3 @@
-
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Swal from "sweetalert2";
 
 export const nowWib = () => {
@@ -53,17 +51,4 @@ export const confirmDelete = async (url: string, onSuccess?: () => void) => {
       Swal.fire("Error!", "Terjadi kesalahan saat menghapus.", "error");
     }
   }
-};
-
-export const refreshData = async (router: AppRouterInstance) => {
-  return new Promise<void>((resolve) => {
-    // 1. Trigger refresh dari router
-    router.refresh();
-    
-    // 2. Beri sedikit jeda agar Server Component selesai re-render
-    // sebelum UI (seperti Modal/SweetAlert) memberikan konfirmasi final
-    setTimeout(() => {
-      resolve();
-    }, 100); 
-  });
 };

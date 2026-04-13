@@ -6,7 +6,6 @@ import { Role } from "@prisma/client";
 import { nowWib } from "../lib/helper";
 import path from "path";
 import { writeFile } from "fs/promises";
-import { revalidatePath } from "next/cache";
 
 export async function getUsersService(params: GetUsersParams) {
   const page = Math.max(1, params.page || 1);
@@ -56,39 +55,38 @@ export async function store(
     return sendError("Email sudah digunakan", 400);
   }
 
-  // 5. Hash Password (Wajib sebelum simpan ke DB)
+  
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // 6. Logika Simpan Gambar (Opsional)
+  
   let imageUrl = null;
 
   if (image && image.size > 0) {
     const bytes = await image.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 1. Buat satu variabel nama file agar konsisten
+    
     const fileName = `${Date.now()}-${image.name}`;
 
-    // 2. Gunakan fileName yang sama untuk path penyimpanan fisik
+  
     const filePath = path.join(process.cwd(), "public/uploads", fileName);
     await writeFile(filePath, buffer);
 
-    // 3. Gunakan fileName yang SAMA untuk URL database
+  
     imageUrl = `/uploads/${fileName}`;
   }
 
   const finalRole = role as Role;
 
-  // 7. INSERT KE DATABASE MENGGUNAKAN PRISMA
+  
   await prisma.user.create({
     data: {
       name: name,
       email: email,
       password: hashedPassword,
       role: finalRole,
-      image: imageUrl, // Sekarang nilainya pasti sama dengan file di folder public/uploads
+      image: imageUrl, 
       created_at: nowWib(),
-      updated_at: null,
     },
   });
 
@@ -96,11 +94,10 @@ export async function store(
 }
 
 export async function update(
-  id: number, // Tambahkan parameter ID
+  id: number, 
   name: string,
   image?: File | null,
 ) {
-  // 1. Cari user lama untuk mendapatkan URL gambar lama jika ada
 
   const existingUser = await prisma.user.findUnique({
     where: { id: id },
@@ -110,8 +107,8 @@ export async function update(
     throw new Error("User tidak ditemukan");
   }
 
-  // 2. Logika Simpan Gambar
-  let imageUrl = existingUser.image; // Default gunakan gambar lama
+  
+  let imageUrl = existingUser.image; 
 
   if (image && image.size > 0) {
     const bytes = await image.arrayBuffer();
@@ -124,14 +121,14 @@ export async function update(
     imageUrl = `/uploads/${fileName}`;
   }
 
-  // 3. UPDATE KE DATABASE MENGGUNAKAN PRISMA
+  
   await prisma.user.update({
     where: {
-      id: id, // Menentukan data mana yang diupdate
+      id: id, 
     },
     data: {
       name: name,
-      image: imageUrl, // Update URL baru jika ada, jika tidak tetap yang lama
+      image: imageUrl,
       updated_at: nowWib(),
     },
   });
@@ -140,7 +137,6 @@ export async function update(
 }
 
 export async function deleteUser(id: number) {
-  // Cek apakah user ada sebelum dihapus
   const user = await prisma.user.findUnique({
     where: { id },
   });
@@ -149,14 +145,13 @@ export async function deleteUser(id: number) {
     throw new Error("User tidak ditemukan");
   }
 
-  // Proses hapus
   await prisma.user.update({
     where: { id },
     data: {
       deleted_at: nowWib(),
     },
   });
-  revalidatePath("/users");
+
   return successResponse(null, "User berhasil dihapus", 200);
 }
 

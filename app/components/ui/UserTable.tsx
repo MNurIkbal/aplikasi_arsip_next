@@ -1,5 +1,5 @@
 "use client";
-
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   useReactTable,
@@ -42,6 +42,7 @@ export default function UserTable() {
     pageIndex: 0,
     pageSize: 10,
   });
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -151,10 +152,13 @@ export default function UserTable() {
             {/* DELETE */}
             <button
               onClick={() =>
-                confirmDelete(
-                  `/api/users/${user.id}`,
-                  () => router.refresh()
-                )
+                confirmDelete(`/api/users/${user.id}`, () => {
+                  // 1. Refresh untuk TanStack Query (Client Side Cache)
+                  queryClient.invalidateQueries({ queryKey: ["users"] });
+
+                  // 2. Refresh untuk Server Components (Next.js Cache)
+                  router.refresh();
+                })
               }
               className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition cursor-pointer"
             >
