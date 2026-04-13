@@ -19,8 +19,9 @@ import {
 import UserForm from "./UserForm";
 import BaseModal from "./BaseModal";
 import { getUser } from "@/app/hooks/UserHooks";
-import { formatDateTime } from "@/app/lib/helper";
+import { confirmDelete, formatDateTime } from "@/app/lib/helper";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const columnHelper = createColumnHelper<any>();
 
@@ -41,6 +42,7 @@ export default function UserTable() {
     pageIndex: 0,
     pageSize: 10,
   });
+  const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const [search, setSearch] = useState("");
@@ -148,7 +150,12 @@ export default function UserTable() {
 
             {/* DELETE */}
             <button
-              onClick={() => console.log("Delete", user)}
+              onClick={() =>
+                confirmDelete(
+                  `/api/users/${user.id}`,
+                  () => router.refresh()
+                )
+              }
               className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import { sendError, successResponse } from "@/app/lib/response";
 import { validateUser } from "@/app/lib/validation";
-import { update } from "@/app/services/UserService";
+import { deleteUser, update } from "@/app/services/UserService";
 
 export async function PUT(
   req: Request,
@@ -41,5 +41,36 @@ export async function PUT(
     }
 
     return sendError("Terjadi kesalahan pada server", 500, error.message);
+  }
+}
+
+export async function DELETE(
+  req: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. Ambil ID dari params (tunggu promise)
+    const { id } = await params;
+    const userId = Number(id);
+
+    // 2. Validasi ID
+    if (isNaN(userId)) {
+      return sendError("ID tidak valid", 400);
+    }
+
+    // 3. Eksekusi Service
+    // Asumsi: deleteUser adalah fungsi yang langsung berinteraksi dengan Prisma
+    const hapus = await deleteUser(userId);
+
+    // 4. Return Response
+    // Jika deleteUser berhasil (biasanya mengembalikan data user yang dihapus)
+    if (hapus) {
+      return successResponse(null, "User berhasil dihapus", 200);
+    } 
+    
+    return sendError("User tidak ditemukan", 404);
+
+  } catch (error: any) {
+    return sendError(error.message || "Gagal menghapus user", 500);
   }
 }

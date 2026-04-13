@@ -10,36 +10,57 @@ const createPrismaClient = () => {
   }).$extends({
     query: {
       $allModels: {
-        async $allOperations({ operation, args, query }) {
-          // Daftar operasi yang akan disuntikkan waktu WIB secara otomatis
+        async $allOperations({ model, operation, args, query }) {
+          const jakartaTime = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+
+          // --- 1. LOGIKA AUTO-TIMESTAMP ---
           const timestampOps = ["create", "update", "upsert", "createMany", "updateMany"];
-
           if (timestampOps.includes(operation)) {
-            const now = new Date();
-            // Geser waktu manual ke +7 jam untuk bypass standar UTC Prisma
-            const jakartaTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-
-            if (operation === "create" || operation === "update") {
-              const data = args.data as any;
-              // Set updated_at setiap ada perubahan
-              data.updated_at = jakartaTime;
-              
-              // Set created_at jika belum ada (mencegah overwrite saat backdate manual)
-              if (operation === "create" && !data.created_at) {
-                data.created_at = jakartaTime;
+            const data = (args as any).data;
+            if (data) {
+              if (operation === "create" || operation === "update") {
+                data.updated_at = jakartaTime;
+                if (operation === "create" && !data.created_at) {
+                  data.created_at = jakartaTime;
+                }
+              } else if (operation === "createMany" || operation === "updateMany") {
+                const dataArray = Array.isArray(data) ? data : [data];
+                dataArray.forEach((item: any) => {
+                  item.updated_at = jakartaTime;
+                  if (operation === "createMany" && !item.created_at) {
+                    item.created_at = jakartaTime;
+                  }
+                });
               }
             }
-
-            if (operation === "createMany" || operation === "updateMany") {
-              const dataArray = Array.isArray(args.data) ? args.data : [args.data];
-              dataArray.forEach((item: any) => {
-                item.updated_at = jakartaTime;
-                if (operation === "createMany" && !item.created_at) {
-                  item.created_at = jakartaTime;
-                }
-              });
-            }
           }
+
+          // --- 2. LOGIKA GLOBAL FILTER SOFT DELETE ---
+          const readOps = ["findFirst", "findMany", "count", "aggregate", "findUnique", "findFirstOrThrow", "findUniqueOrThrow"];
+          
+          // Gunakan pengecekan (args as any) agar TS tidak error saat mengakses .where
+          if (readOps.includes(operation)) {
+            (args as any).where = {
+              ...(args as any).where,
+              deleted_at: null,
+            };
+          }
+
+          // --- 3. LOGIKA OVERRIDE DELETE ---
+          if (operation === "delete") {
+            return (prisma as any)[model].update({
+              where: (args as any).where,
+              data: { deleted_at: jakartaTime },
+            });
+          }
+
+          if (operation === "deleteMany") {
+            return (prisma as any)[model].updateMany({
+              where: (args as any).where,
+              data: { deleted_at: jakartaTime },
+            });
+          }
+
           return query(args);
         },
       },
@@ -48,5 +69,4 @@ const createPrismaClient = () => {
 };
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
-
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

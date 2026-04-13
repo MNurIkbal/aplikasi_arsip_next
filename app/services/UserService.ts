@@ -78,7 +78,6 @@ export async function store(
 
   const finalRole = role as Role;
 
-
   // 7. INSERT KE DATABASE MENGGUNAKAN PRISMA
   await prisma.user.create({
     data: {
@@ -88,6 +87,7 @@ export async function store(
       role: finalRole,
       image: imageUrl, // Sekarang nilainya pasti sama dengan file di folder public/uploads
       created_at: nowWib(),
+      updated_at: null,
     },
   });
 
@@ -100,11 +100,10 @@ export async function update(
   image?: File | null,
 ) {
   // 1. Cari user lama untuk mendapatkan URL gambar lama jika ada
-  
+
   const existingUser = await prisma.user.findUnique({
-    where: { id: id }
+    where: { id: id },
   });
-  
 
   if (!existingUser) {
     throw new Error("User tidak ditemukan");
@@ -138,3 +137,25 @@ export async function update(
 
   return successResponse(null, "User berhasil diperbarui", 200);
 }
+
+export async function deleteUser(id: number) {
+  // Cek apakah user ada sebelum dihapus
+  const user = await prisma.user.findUnique({
+    where: { id },
+  });
+
+  if (!user) {
+    throw new Error("User tidak ditemukan");
+  }
+
+  // Proses hapus
+  await prisma.user.update({
+    where: { id },
+    data: {
+      deleted_at: nowWib(),
+    },
+  });
+  
+  return successResponse(null, "User berhasil dihapus", 200);
+}
+

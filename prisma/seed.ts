@@ -18,8 +18,7 @@ export const getJakartaDate = () => {
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 10);
 
-  console.log("--- Memulai Seeding ---");
-  console.log(getJakartaDate());
+  
   
   // Hapus data lama
   await prisma.user.deleteMany();
