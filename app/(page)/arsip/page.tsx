@@ -3,12 +3,12 @@
 import React, { useState, useMemo } from "react";
 import Layout from "@/app/components/layout";
 import Breakbout from "@/app/components/ui/breakbout";
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/app/components/ui/table";
 import { Button } from "@/app/components/ui/button";
 
-import { FileSearch, UserPlus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from "lucide-react";
+import { FileSearch, UserPlus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Input } from "@/app/components/ui/input";
 
@@ -41,21 +41,24 @@ export default function ArsipPage() {
 
   return (
     <Layout>
-      <Breakbout menu="Pengumuman Tender" />
+      <Breakbout menu="Pengarsipan" />
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        
+        <Button className="bg-cyan-600 hover:bg-cyan-700 mb-3 cursor-pointer text-white flex items-center gap-2 shadow-sm transition-all h-10 px-4">
+          <Plus className="h-4 w-4" />
+          <span className="font-semibold text-sm">Tambah Data</span>
+        </Button>
         {/* --- HEADER: ROWS PER PAGE (KIRI) & SEARCH (KANAN) --- */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
-          
+
           {/* POJOK KIRI ATAS: Rows Per Page & Showing info */}
           <div className="flex items-center gap-3 text-sm w-full md:w-auto">
             <span className="text-gray-500 font-medium">Rows per page:</span>
-            <Select 
-              value={itemsPerPage.toString()} 
+            <Select
+              value={itemsPerPage.toString()}
               onValueChange={(v) => { setItemsPerPage(Number(v)); setCurrentPage(1); }}
             >
-              <SelectTrigger className="w-[75px] h-9 border-gray-300 bg-gray-50">
+              <SelectTrigger className="w-[75px] h-9 border-gray-300 bg-gray-50 cusror-pointer focus:ring-cyan-500 rounded-md">
                 <SelectValue placeholder="10" />
               </SelectTrigger>
               <SelectContent>
@@ -72,8 +75,8 @@ export default function ArsipPage() {
           {/* SEARCH (Tetap di kanan atas) */}
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input 
-              placeholder="Cari kata kunci..." 
+            <Input
+              placeholder="Cari kata kunci..."
               className="pl-9 h-10 border-gray-300 focus:ring-cyan-500 rounded-md"
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
@@ -84,7 +87,7 @@ export default function ArsipPage() {
         {/* --- TABLE CONTENT --- */}
         <div className="relative border border-cyan-100 rounded-sm overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <Table className="w-full table-fixed min-w-[1100px] border-collapse">
+            <Table className="w-full table-fixed min-w-[1100px] border-collapse table-hover">
               <TableHeader className="bg-gray-50 border-b-2 border-gray-100">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="w-[60px] text-center border-r font-bold text-gray-700 uppercase text-[11px]">No</TableHead>
@@ -110,8 +113,24 @@ export default function ArsipPage() {
                       <TableCell className="border-r px-4 text-gray-500 text-[11px] leading-tight italic break-words whitespace-normal">{item.waktuPendaftaran}</TableCell>
                       <TableCell className="p-2 text-center">
                         <div className="flex justify-center gap-1.5">
-                          <Button variant="outline" size="icon" className="h-7 w-7 border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"><FileSearch className="h-4 w-4" /></Button>
-                          <Button variant="outline" size="icon" className="h-7 w-7 border-green-200 bg-green-50 text-green-600 hover:bg-green-100"><UserPlus className="h-4 w-4" /></Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 cursor-pointer border-green-200 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                            title="Edit Data"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+
+                          {/* BUTTON HAPUS */}
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 cursor-pointer w-8 border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                            title="Hapus Data"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -127,16 +146,16 @@ export default function ArsipPage() {
 
         {/* --- FOOTER: PAGINATION POJOK KIRI BAWAH --- */}
         <div className="mt-4 flex flex-col md:flex-row items-center justify-start gap-4">
-          
+
           {/* POJOK KIRI BAWAH: Pagination Nav */}
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentPage(1)} disabled={safeCurrentPage === 1}>
+            <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer" onClick={() => setCurrentPage(1)} disabled={safeCurrentPage === 1}>
               <ChevronsLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safeCurrentPage === 1}>
+            <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safeCurrentPage === 1}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            
+
             <div className="flex items-center gap-1 mx-2">
               <span className="text-sm text-gray-500">Page</span>
               <span className="flex h-8 w-8 items-center justify-center bg-cyan-600 text-white rounded-md text-xs font-bold shadow-sm">
@@ -145,10 +164,10 @@ export default function ArsipPage() {
               <span className="text-sm text-gray-500">of {totalPages || 1}</span>
             </div>
 
-            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safeCurrentPage >= totalPages}>
+            <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safeCurrentPage >= totalPages}>
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentPage(totalPages)} disabled={safeCurrentPage >= totalPages}>
+            <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer" onClick={() => setCurrentPage(totalPages)} disabled={safeCurrentPage >= totalPages}>
               <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
