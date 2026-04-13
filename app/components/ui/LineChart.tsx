@@ -44,7 +44,7 @@ export default function LineChart() {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
-      <h2 className="text-lg font-bold mb-4 text-gray-800">Statistik Pesanan</h2>
+      <h2 className="text-lg font-bold mb-4 text-gray-800">Statistik Pengarsipan Per Bulan</h2>
       <Chart options={chartOptions} series={chartSeries} type="line" height={300} />
     </div>
   );

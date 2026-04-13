@@ -11,6 +11,8 @@ import { Button } from "@/app/components/ui/button";
 import { FileSearch, UserPlus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Input } from "@/app/components/ui/input";
+import BaseModal from "@/app/components/ui/BaseModal";
+import ArsipForm from "@/app/components/ui/ArsipForm";
 
 export default function ArsipPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,15 +41,46 @@ export default function ArsipPage() {
   const startIndex = (safeCurrentPage - 1) * itemsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
+  
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: "ADD" | "EDIT" | "DELETE" | null;
+    data: any;
+  }>({
+    isOpen: false,
+    type: null,
+    data: null,
+  });
+  const closeModal = () => setModalConfig({ isOpen: false, type: null, data: null });
+
+  const handleAction = (data: any) => {
+    closeModal();
+  };
   return (
     <Layout>
       <Breakbout menu="Pengarsipan" />
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <Button className="bg-cyan-600 hover:bg-cyan-700 mb-3 cursor-pointer text-white flex items-center gap-2 shadow-sm transition-all h-10 px-4">
+        <Button className="bg-indigo-600 hover:bg-indigo-600 mb-3 cursor-pointer text-white flex items-center gap-2 shadow-sm transition-all h-10 px-4" onClick={() => setModalConfig({ isOpen: true, type: "ADD", data: null })}>
           <Plus className="h-4 w-4" />
           <span className="font-semibold text-sm">Tambah Data</span>
         </Button>
+        <BaseModal
+                isOpen={modalConfig.isOpen}
+                onClose={closeModal}
+                size="2xl"
+                title={
+                  modalConfig.type === "ADD" ? "Buat Arsip Baru" :
+                    modalConfig.type === "EDIT" ? "Update Data Arsip" : "Hapus Data"
+                }
+              >
+                {/* Render Form Berdasarkan Type */}
+                <ArsipForm
+                  initialData={modalConfig.data}
+                  onSubmit={handleAction}
+                  onCancel={closeModal}
+                />
+              </BaseModal>
         {/* --- HEADER: ROWS PER PAGE (KIRI) & SEARCH (KANAN) --- */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
 

@@ -146,7 +146,11 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
 
       {/* SECTION: UPLOAD FOTO */}
       <div className="flex flex-col items-center justify-center pb-4">
-        <label className="block text-sm font-bold text-gray-700 mb-3 text-center">Foto Profil</label>
+        <label className="block text-sm font-bold text-gray-700 mb-3 text-center">Foto Profil 
+          {!initialData && (
+            <span className="text-red-600"> *</span>
+          )}
+        </label>
         <div
           className={`relative w-28 h-28 rounded-3xl border-2 border-dashed flex items-center justify-center overflow-hidden group cursor-pointer transition-all ${errors.image ? "border-red-500 bg-red-50" : "border-gray-200 bg-white hover:border-indigo-400"
             }`}
@@ -189,7 +193,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* INPUT: NAMA */}
         <div className="space-y-1">
-          <label className="block text-sm font-bold text-gray-700">Nama Lengkap</label>
+          <label className="block text-sm font-bold text-gray-700">Nama Lengkap <span className="text-red-600">*</span></label>
           <input
             placeholder="Masukkan nama lengkap..."
             className={`w-full px-4 py-2.5 bg-white border rounded-xl outline-none focus:ring-2 transition-all ${errors.name ? "border-red-500 focus:ring-red-100" : "border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500"
@@ -206,7 +210,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
 
         {/* INPUT: EMAIL */}
         <div className="space-y-1">
-          <label className="block text-sm font-bold text-gray-700">Email</label>
+          <label className="block text-sm font-bold text-gray-700">Email <span className="text-red-600">*</span></label>
           <input
             type="email"
             placeholder="Email pengguna..."
@@ -238,7 +242,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
       {/* INPUT: PASSWORD */}
       {!initialData && (
         <div className="space-y-1">
-          <label className="block text-sm font-bold text-gray-700">Password</label>
+          <label className="block text-sm font-bold text-gray-700">Password <span className="text-red-600">*</span></label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -269,7 +273,7 @@ export default function UserForm({ initialData, onSubmit, onCancel }: UserFormPr
       {/* INPUT: ROLE DENGAN PENCARIAN */}
 
       <div className="space-y-1 relative">
-        <label className="block text-sm font-bold text-gray-700">Role Pengguna</label>
+        <label className="block text-sm font-bold text-gray-700">Role Pengguna <span className="text-red-600">*</span></label>
         <Select
           instanceId="user-role-selection"
           options={roleOptions}
