@@ -23,13 +23,12 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
 
   // 1. State Utama
   const [formData, setFormData] = useState<any>({
-    judul: "",
-    tanggal: new Date().toISOString().split('T')[0],
-    kategori: "Dokumen Publik",
-    password_arsip: "",
+    judul: "as",
+    tanggal: "2025-02-10",
+    kategori: "Dokumen Rahasia",
+    password_arsip: "123456",
   });
 
-  // 2. State untuk Dynamic Additional Data
   const [additionalData, setAdditionalData] = useState([
     { id: Date.now(), nama_dokumen: "", file: null as File | null }
   ]);
@@ -38,7 +37,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
   const [showPassword, setShowPassword] = useState(false);
 
   const kategoriOptions = [
-    { value: "Dokumen Publik", label: "Dokumen Publik", icon: <Globe size={16} /> },
+    { value: "Dokumen Umum", label: "Dokumen Umum", icon: <Globe size={16} /> },
     { value: "Dokumen Khusus", label: "Dokumen Khusus", icon: <ShieldCheck size={16} /> },
     { value: "Dokumen Rahasia", label: "Dokumen Rahasia", icon: <Lock size={16} /> },
   ];
@@ -48,7 +47,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
       setFormData({
         judul: initialData.judul || "",
         tanggal: initialData.tanggal || new Date().toISOString().split('T')[0],
-        kategori: initialData.kategori || "Dokumen Publik",
+        kategori: initialData.kategori || "",
         password_arsip: "",
       });
     }
@@ -111,10 +110,10 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
 
   // Inisialisasi Mutasi
   const mutation = useMutation({
-    mutationFn: createArsip,
+    mutationFn: (newArsip: any) => createArsip(newArsip),
     onSuccess: () => {
       // REFRESH DATA: Invalidate query yang menyimpan list arsip
-      queryClient.invalidateQueries({ queryKey: ["arsip-list"] });
+      queryClient.invalidateQueries({ queryKey: ["arsip"] });
 
       Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
       onCancel(); // Tutup form

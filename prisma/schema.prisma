@@ -26,17 +26,13 @@ model User {
   deleted_at DateTime? @db.DateTime
 }
 
-enum KategoriArsip {
-  UMUM    @map("Dokumen Umum")
-  KHUSUS  @map("Dokumen Khusus")
-  RAHASIA @map("Dokumen Rahasia")
-}
+
 
 model Arsip {
   id         Int      @id @default(autoincrement())
   judul      String 
   tanggal    DateTime @db.Date
-  kategori   KategoriArsip
+  kategori   String
   password_arsip String?
   params  Json?
 
