@@ -25,3 +25,19 @@ model User {
   updated_at DateTime? @db.DateTime
   deleted_at DateTime? @db.DateTime
 }
+
+
+
+model Arsip {
+  id         Int      @id @default(autoincrement())
+  judul      String 
+  tanggal    DateTime @db.Date
+  kategori   String
+  password_arsip String?
+  params  Json?
+
+  created_at DateTime? @db.DateTime
+  
+  updated_at DateTime? @db.DateTime
+  deleted_at DateTime? @db.DateTime
+}

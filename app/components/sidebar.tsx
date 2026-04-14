@@ -2,18 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, LayoutDashboard, Archive, Users } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [mounted, setMounted] = useState(false);
 
-  const menu = [
-    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Arsip", path: "/arsip", icon: Archive },
-    { name: "Users", path: "/users", icon: Users },
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 1. Definisikan menu dengan daftar role yang diizinkan
+  const menuConfig = [
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard, roles: ["Admin", "Pegawai"] },
+    { name: "Pengarsipan", path: "/arsip", icon: Archive, roles: ["Admin", "Pegawai"] },
+    { name: "Pengguna", path: "/users", icon: Users, roles: ["Admin"] },
   ];
+
+  // 2. Filter menu berdasarkan role user
+  const filteredMenu = menuConfig.filter((item) => {
+    // Default role jika data user belum tersedia
+    const userRole = user?.role || "Pegawai"; 
+    return item.roles.includes(userRole);
+  });
 
   return (
     <>
@@ -45,7 +61,9 @@ export default function Sidebar() {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold">Aplikasi Arsip</h2>
+          <div>
+            <h2 className="text-2xl font-bold">Aplikasi Arsip</h2>
+          </div>
 
           {/* Close button (mobile) */}
           <button
@@ -58,7 +76,7 @@ export default function Sidebar() {
 
         {/* Menu */}
         <nav className="space-y-2">
-          {menu.map((item) => {
+          {filteredMenu.map((item) => {
             const isActive = pathname.startsWith(item.path);
             const Icon = item.icon;
 

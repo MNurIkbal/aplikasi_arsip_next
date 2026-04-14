@@ -1,3 +1,5 @@
+"use client";
+
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
@@ -7,7 +9,6 @@ interface BaseModalProps {
   title: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
-  // Prop tambahan untuk kontrol tinggi manual jika dibutuhkan
 }
 
 export default function BaseModal({ 
@@ -20,7 +21,7 @@ export default function BaseModal({
   
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden"; // Cegah background scroll saat modal buka
+      document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
@@ -40,18 +41,23 @@ export default function BaseModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay dengan transisi halus */}
+      {/* Overlay */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-300" 
         onClick={onClose} 
       />
       
+      {/* Container Modal */}
       <div 
         className={`relative bg-white rounded-3xl shadow-2xl w-full ${sizeClasses[size]} 
-          flex flex-col overflow-hidden animate-in zoom-in slide-in-from-bottom-4 duration-300`} // Kontrol tinggi di sini
+          flex flex-col 
+          /* --- PENAMBAHAN KRITIKAL DI SINI --- */
+          max-h-[90vh] 
+          /* ---------------------------------- */
+          overflow-hidden animate-in zoom-in slide-in-from-bottom-4 duration-300`}
       >
-        {/* Header - Tetap di atas (Sticky) */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0">
+        {/* Header - Tetap (Sticky karena flex flex-col) */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0 bg-white z-10">
           <h3 className="text-xl font-extrabold text-gray-800 tracking-tight">{title}</h3>
           <button 
             onClick={onClose} 
@@ -61,9 +67,11 @@ export default function BaseModal({
           </button>
         </div>
 
-        {/* Body - Bisa di-scroll jika konten lebih tinggi dari maxHeight */}
+        {/* Body - Area Scrollable */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-          {children}
+          <div className="h-full">
+            {children}
+          </div>
         </div>
       </div>
     </div>

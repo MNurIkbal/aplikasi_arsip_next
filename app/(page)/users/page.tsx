@@ -7,7 +7,7 @@ export default function UsersPage() {
   return (
     <Layout>
       <Breakbout menu="Users" />
-      <div className="mt-6">
+      <div className="mt-6" >
         <UserTable />
       </div>
     </Layout>

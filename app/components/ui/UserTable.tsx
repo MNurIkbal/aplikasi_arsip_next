@@ -19,7 +19,7 @@ import {
 import UserForm from "./UserForm";
 import BaseModal from "./BaseModal";
 import { getUser } from "@/app/hooks/UserHooks";
-import { confirmDelete, formatDateTime } from "@/app/lib/helper";
+import { confirmDelete, formatDateTime } from "@/app/utils/helper";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -205,7 +205,8 @@ export default function UserTable() {
         onClick={() => setModalConfig({ isOpen: true, type: "ADD", data: null })}
         className="bg-indigo-600 ml-4 mt-4 cursor-pointer text-white px-5 py-2 rounded-xl font-bold shadow-lg"
       >
-        Tambah User Baru
+        
+        Tambah Data
       </button>
 
       {/* MODAL DYNAMIC MANIPULATION */}

@@ -52,3 +52,18 @@ export const confirmDelete = async (url: string, onSuccess?: () => void) => {
     }
   }
 };
+
+export const formatDateIndonesia = (date: Date | string | null | undefined): string => {
+  if (!date) return "-";
+
+  const d = typeof date === "string" ? new Date(date) : date;
+
+  // Cek apakah date valid
+  if (isNaN(d.getTime())) return "-";
+
+  return d.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
