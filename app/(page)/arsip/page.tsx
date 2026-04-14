@@ -62,7 +62,7 @@ export default function ArsipPage() {
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <Button className="bg-indigo-600 hover:bg-indigo-600 mb-3 cursor-pointer text-white flex items-center gap-2 shadow-sm transition-all h-10 px-4" onClick={() => setModalConfig({ isOpen: true, type: "ADD", data: null })}>
-          <Plus className="h-4 w-4" />
+          
           <span className="font-semibold text-sm">Tambah Data</span>
         </Button>
         <BaseModal

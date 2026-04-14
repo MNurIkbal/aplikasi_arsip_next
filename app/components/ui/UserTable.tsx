@@ -205,6 +205,7 @@ export default function UserTable() {
         onClick={() => setModalConfig({ isOpen: true, type: "ADD", data: null })}
         className="bg-indigo-600 ml-4 mt-4 cursor-pointer text-white px-5 py-2 rounded-xl font-bold shadow-lg"
       >
+        
         Tambah Data
       </button>
 

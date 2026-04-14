@@ -8,8 +8,9 @@ import {
   Calendar, FolderEdit
 } from "lucide-react";
 import Swal from "sweetalert2";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { validateArsip } from "@/app/lib/validation";
+import { createArsip } from "@/app/services/fontend/ArsipService";
 
 interface ArsipFormProps {
   initialData?: any;
@@ -107,17 +108,35 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
   };
 
   // --- SUBMIT HANDLER ---
+
+  // Inisialisasi Mutasi
+  const mutation = useMutation({
+    mutationFn: createArsip,
+    onSuccess: () => {
+      // REFRESH DATA: Invalidate query yang menyimpan list arsip
+      queryClient.invalidateQueries({ queryKey: ["arsip-list"] });
+
+      Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
+      onCancel(); // Tutup form
+    },
+    onError: (error: any) => {
+      Swal.fire("Gagal", error.message || "Terjadi kesalahan", "error");
+    }
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const dataToValidate = {
       ...formData,
-      attachments: additionalData
+      nama_dokumen: additionalData
     };
-    const validation = validateArsip(dataToValidate, false);
+
+    const validation = validateArsip(dataToValidate, !!initialData);
 
     if (!validation.isValid) {
       setErrors(validation.errors);
-      return; // Stop jika tidak valid
+      return;
     }
     setErrors({});
 
@@ -127,24 +146,12 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
       didOpen: () => Swal.showLoading(),
     });
 
-    try {
-      const finalPayload = {
-        ...formData,
-        attachments: additionalData
-      };
-
-      console.log("Payload yang dikirim:", finalPayload);
-
-      setTimeout(() => {
-        Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
-        onCancel();
-      }, 1500);
-
-    } catch (err) {
-      Swal.fire("Gagal", "Terjadi kesalahan saat menyimpan data.", "error");
-    }
+    // Eksekusi pemanggilan API melalui mutation
+    mutation.mutate({
+      ...formData,
+      attachments: additionalData
+    });
   };
-
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
 
@@ -172,7 +179,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
           <input
             type="date"
             className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            // value={formData.tanggal}
+            value={formData.tanggal}
             onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
           />
           {errors.tanggal && <p className="text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.tanggal}</p>}
@@ -205,6 +212,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
               }),
             }}
           />
+          {errors.kategori && <p className="text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.kategori}</p>}
         </div>
 
         {formData.kategori === "Dokumen Rahasia" && (
@@ -229,6 +237,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
             <p className="text-[10px] text-amber-600 italic font-medium flex items-center gap-1">
               <Lock size={10} /> Password ini akan digunakan untuk enkripsi file rahasia.
             </p>
+            {errors.password_arsip && <p className="text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.password_arsip}</p>}
           </div>
         )}
       </div>
@@ -276,6 +285,11 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
                     onChange={(e) => handleInputChange(item.id, e.target.value)}
                   />
                 </div>
+                {errors.attachments?.[index]?.nama_dokumen?._errors[0] && (
+                  <p className="text-[10px] text-red-500 flex items-center gap-1 mt-1">
+                    <AlertCircle size={10} /> {errors.attachments[index].nama_dokumen._errors[0]}
+                  </p>
+                )}
               </div>
 
               {/* Kolom Upload File */}
@@ -294,6 +308,11 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
                     onChange={(e) => handleFileChange(item.id, e.target.files?.[0])}
                   />
                 </label>
+                {errors.attachments?.[index]?.file?._errors[0] && (
+                  <p className="text-[10px] text-red-500 flex items-center gap-1 mt-1">
+                    <AlertCircle size={10} /> {errors.attachments[index].file._errors[0]}
+                  </p>
+                )}
               </div>
 
               {/* Kolom Action */}
@@ -332,7 +351,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
           type="submit"
           className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 active:scale-95 transition-all text-sm cursor-pointer"
         >
-          {initialData ? "Update Arsip" : "Simpan Arsip"}
+          {initialData ? "Update" : "Simpan"}
         </button>
       </div>
     </form>
