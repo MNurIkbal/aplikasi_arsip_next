@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearError } from "@/store/authSlice"; // Pastikan clearError sudah ada di authSlice
 import { useRouter } from "next/navigation";
 import { RootState, AppDispatch } from "@/store";
-import { loginSchema } from "@/app/lib/validation";
+import { loginSchema } from "@/app/utils/validation";
 
 // SweetAlert2 Setup
 import Swal from "sweetalert2";

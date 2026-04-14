@@ -1,5 +1,5 @@
-import { sendError, successResponse } from "@/app/lib/response";
-import { validateUser } from "@/app/lib/validation";
+import { sendError, successResponse } from "@/app/utils/response";
+import { validateUser } from "@/app/utils/validation";
 import { deleteUser, update } from "@/app/services/UserService";
 
 export async function PUT(

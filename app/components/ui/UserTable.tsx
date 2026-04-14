@@ -19,7 +19,7 @@ import {
 import UserForm from "./UserForm";
 import BaseModal from "./BaseModal";
 import { getUser } from "@/app/hooks/UserHooks";
-import { confirmDelete, formatDateTime } from "@/app/lib/helper";
+import { confirmDelete, formatDateTime } from "@/app/utils/helper";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 

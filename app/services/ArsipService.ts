@@ -3,8 +3,8 @@ import path from "path";
 import archiver from "archiver";
 // @ts-ignore
 import zipEncryptable from "archiver-zip-encryptable";
-import { prisma } from "../lib/prisma";
-import { successResponse, sendError } from "../lib/response"; // Pastikan sendError tersedia
+import { prisma } from "../utils/prisma";
+import { successResponse, sendError } from "../utils/response"; // Pastikan sendError tersedia
 import bcrypt from "bcrypt";
 
 archiver.registerFormat('zip-encryptable', zipEncryptable);

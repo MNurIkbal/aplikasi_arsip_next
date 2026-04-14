@@ -15,3 +15,11 @@ export interface AuthState {
   loading: boolean;
   error: string | null;
 }
+
+export interface ArsipType {
+  initialData: any[];
+  meta: { total: number; totalPages: number };
+  serverPage: number;
+  serverLimit: number;
+  serverSearch: string;
+}

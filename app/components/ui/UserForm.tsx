@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import { Camera, Eye, EyeOff, AlertCircle, Image as ImageIcon } from "lucide-react";
-import { validateUser } from "@/app/lib/validation";
+import { validateUser } from "@/app/utils/validation";
 import Swal from "sweetalert2";
 import { UserService } from "@/app/services/fontend/Uservices";
 import { useQueryClient } from "@tanstack/react-query";

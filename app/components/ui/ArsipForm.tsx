@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { validateArsip } from "@/app/lib/validation";
+import { validateArsip } from "@/app/utils/validation";
 import { createArsip } from "@/app/services/fontend/ArsipService";
 
 interface ArsipFormProps {

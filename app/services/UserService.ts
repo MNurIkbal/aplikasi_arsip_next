@@ -1,9 +1,9 @@
-import { prisma } from "@/app/lib/prisma";
+import { prisma } from "@/app/utils/prisma";
 import { GetUsersParams } from "../types/GlobalType";
-import { sendError, successResponse } from "../lib/response";
+import { sendError, successResponse } from "../utils/response";
 import bcrypt from "bcrypt";
 import { Role } from "@prisma/client";
-import { nowWib } from "../lib/helper";
+import { nowWib } from "../utils/helper";
 import path from "path";
 import { writeFile } from "fs/promises";
 
