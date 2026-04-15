@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${robotoSlab.variable} antialiased font-serif`}>
+      <body className={`${robotoSlab.variable} antialiased font-serif`} suppressHydrationWarning={true}>
         <Providers>{children}</Providers>
       </body>
     </html>
