@@ -1,61 +1,31 @@
-"use client";
+export async function fetchArsip(params: { search?: string; page: number; limit: number }) {
+  try {
+    // 1. Susun Query String secara otomatis agar aman dari karakter aneh
+    const query = new URLSearchParams();
+    if (params.search) query.append("search", params.search);
+    query.append("page", params.page.toString());
+    query.append("limit", params.limit.toString());
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useState, useEffect, useTransition } from "react";
-import { useDebounce } from "use-debounce";
+    
+    // 2. Hit ke endpoint API Route yang sudah kita buat sebelumnya
+    const response = await fetch(`/api/arsip?${query.toString()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-export const useArsip = (initialLimit = 10) => {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const [isPending, startTransition] = useTransition();
+    
+    const result = await response.json();
 
-    // 1. Ambil nilai dari URL atau gunakan default
-    const page = Number(searchParams.get("page")) || 1;
-    const limit = Number(searchParams.get("limit")) || initialLimit;
-    const search = searchParams.get("search") || "";
+    if (!response.ok) {
+      throw new Error(result.message || "Gagal mengambil data dari server");
+    }
 
-    // 2. State lokal untuk input search (agar responsif saat mengetik)
-    const [searchTerm, setSearchTerm] = useState(search);
-    const [debouncedSearch] = useDebounce(searchTerm, 500);
-
-    // 3. Sinkronisasi Search ke URL (Debounced)
-    useEffect(() => {
-        const params = new URLSearchParams(searchParams);
-        if (debouncedSearch) {
-            params.set("search", debouncedSearch);
-            params.set("page", "1"); // Reset ke page 1 saat cari data baru
-        } else {
-            params.delete("search");
-        }
-
-        startTransition(() => {
-            router.push(`${pathname}?${params.toString()}`);
-        });
-    }, [debouncedSearch, pathname, router]);
-
-    // 4. Handler untuk Pagination & Limit
-    const setPage = (newPage: number) => {
-        const params = new URLSearchParams(searchParams);
-        params.set("page", newPage.toString());
-        router.push(`${pathname}?${params.toString()}`);
-    };
-
-    const setLimit = (newLimit: number) => {
-        const params = new URLSearchParams(searchParams);
-        params.set("limit", newLimit.toString());
-        params.set("page", "1"); // Reset ke page 1 saat limit berubah
-        router.push(`${pathname}?${params.toString()}`);
-    };
-
-    return {
-        // State
-        page,
-        limit,
-        searchTerm,
-        isPending,
-        setSearchTerm,
-        setPage,
-        setLimit,
-    };
-};
+    // Mengembalikan { data, meta }
+    return result; 
+  } catch (error) {
+    console.error("Client Service Error:", error);
+    return { data: [], meta: { total: 0, totalPages: 0 } };
+  }
+}

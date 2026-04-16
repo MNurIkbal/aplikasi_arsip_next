@@ -23,3 +23,15 @@ export interface ArsipType {
   serverLimit: number;
   serverSearch: string;
 }
+
+export interface GetArsipParams {
+  search?: string;
+  page: number;
+  limit: number;
+}
+
+export interface ArsipPageProps {
+    serverPage: number;
+    serverLimit: number;
+    serverSearch: string;
+}
