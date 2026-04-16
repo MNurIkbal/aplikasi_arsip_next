@@ -1,91 +1,108 @@
+import { prisma } from "@/app/utils/prisma";
 import { sendError, successResponse } from "@/app/utils/response";
 import { validateArsip } from "@/app/utils/validation";
-import { getArsipResource, store } from "@/app/services/ArsipService";
+import { store } from "@/app/services/ArsipService";
 import { NextRequest } from "next/server";
+export async function POST(req: NextRequest) {
+    try {
+        const formData = await req.formData();
+
+        const judul = formData.get("judul") as string;
+        const tanggal = formData.get("tanggal") as string;
+        const kategori = formData.get("kategori") as string;
+        const password_arsip = formData.get("password_arsip") as string | null;
+
+        const attachments: any[] = [];
+        let index = 0;
+        while (formData.has(`attachments[${index}][nama_dokumen]`)) {
+            const nama_dokumen = formData.get(`attachments[${index}][nama_dokumen]`) as string;
+            const file = formData.get(`attachments[${index}][file]`) as File | null;
+
+            if (file) {
+                attachments.push({ nama_dokumen, file });
+            }
+            index++;
+        }
 
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+        const dataToValidate = {
+            judul,
+            tanggal,
+            kategori,
+            password_arsip,
+            nama_dokumen: attachments,
+        };
 
-  // Parsing & Validasi Input
-  const search = searchParams.get("search") || "";
-  const page = Number(searchParams.get("page") || "1");
-  const limit = Number(searchParams.get("limit") || "10");
+        const validation = validateArsip(dataToValidate, false);
 
-  // try {
-    // Panggil Logic dari Resource
-    
-    const result = await getArsipResource({ search, page, limit });
-    console.log(result);
-    
-    
+        if (!validation.isValid) {
+            const errorMessages = Object.values(validation.errors);
+            const firstErrorMessage = errorMessages.length > 0 ? errorMessages[0] : "Validasi gagal";
+            return sendError(firstErrorMessage as string, 400, validation.errors);
+        }
 
-    // Kirim Response
-    return successResponse(result,"Data berhasil ditampilkan",200);
-  // } catch (error) {
-  //   console.error("API Error:", error);
-  //   return sendError('Gagal memuat data arsip',500,null);
-  // }
+        // Eksekusi Store (Sekarang mengembalikan object dari Database)
+        const result = await store({
+            judul,
+            tanggal,
+            kategori,
+            password_arsip: kategori === "Dokumen Rahasia" ? password_arsip : null, // Hanya kirim password jika Rahasia
+            attachments
+        });
+
+        console.log(result);
+
+        if (result.ok) {
+            const data = await result.json();
+            return successResponse(null, data.message, 201);
+        } else {
+            return sendError("Gagal memproses arsip", 500);
+        }
+
+    } catch (error: any) {
+        console.error("API Error:", error);
+        return sendError("Terjadi kesalahan pada server", 500, error.message);
+    }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const formData = await req.formData();
+export async function getArsipAction(params: {
+  search?: string;
+  page: number;
+  limit: number;
+}) {
+  const { search, page, limit } = params;
+  const skip = (page - 1) * limit;
 
-    const judul = formData.get("judul") as string;
-    const tanggal = formData.get("tanggal") as string;
-    const kategori = formData.get("kategori") as string;
-    const password_arsip = formData.get("password_arsip") as string | null;
-
-    const attachments: any[] = [];
-    let index = 0;
-    while (formData.has(`attachments[${index}][nama_dokumen]`)) {
-      const nama_dokumen = formData.get(`attachments[${index}][nama_dokumen]`) as string;
-      const file = formData.get(`attachments[${index}][file]`) as File | null;
-
-      if (file) {
-        attachments.push({ nama_dokumen, file });
+  // Filter pencarian berdasarkan judul
+  const where = search
+    ? {
+        judul: {
+          contains: search,
+          mode: "insensitive" as const,
+        },
       }
-      index++;
-    }
+    : {};
 
+  try {
+    const [data, total] = await Promise.all([
+      prisma.arsip.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { created_at: "desc" },
+      }),
+      prisma.arsip.count({ where }),
+    ]);
 
-    const dataToValidate = {
-      judul,
-      tanggal,
-      kategori,
-      password_arsip,
-      nama_dokumen: attachments,
+    return {
+      data,
+      meta: {
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
-
-    const validation = validateArsip(dataToValidate, false);
-
-    if (!validation.isValid) {
-      const errorMessages = Object.values(validation.errors);
-      const firstErrorMessage = errorMessages.length > 0 ? errorMessages[0] : "Validasi gagal";
-      return sendError(firstErrorMessage as string, 400, validation.errors);
-    }
-
-    // Eksekusi Store (Sekarang mengembalikan object dari Database)
-    const result = await store({
-      judul,
-      tanggal,
-      kategori,
-      password_arsip: kategori === "Dokumen Rahasia" ? password_arsip : null, // Hanya kirim password jika Rahasia
-      attachments
-    });
-
-    console.log(result);
-
-    if (result.ok) {
-      const data = await result.json();
-      return successResponse(null, data.message, 201);
-    } else {
-      return sendError("Gagal memproses arsip", 500);
-    }
-
-  } catch (error: any) {
-    console.error("API Error:", error);
-    return sendError("Terjadi kesalahan pada server", 500, error.message);
+  } catch (error) {
+    console.error("Error fetching arsip:", error);
+    return { data: [], meta: { total: 0, totalPages: 0 } };
   }
 }

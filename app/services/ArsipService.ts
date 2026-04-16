@@ -6,7 +6,6 @@ import zipEncryptable from "archiver-zip-encryptable";
 import { prisma } from "../utils/prisma";
 import { successResponse, sendError } from "../utils/response"; // Pastikan sendError tersedia
 import bcrypt from "bcrypt";
-import { GetArsipParams } from "../types/GlobalType";
 
 archiver.registerFormat('zip-encryptable', zipEncryptable);
 
@@ -33,7 +32,7 @@ export async function store(data: {
     const archive = archiver('zip-encryptable', {
         zlib: { level: 9 },
         forceLocalTime: true,
-        password: password_arsip || undefined
+        password: password_arsip || undefined 
     });
 
     try {
@@ -103,48 +102,4 @@ export async function store(data: {
         console.error("Store Service Error:", error);
         return sendError(error.message || "Gagal memproses data", 500);
     }
-}
-
-
-export async function getArsipResource({ search, page, limit }: GetArsipParams) {
-    // Kalkulasi pagination menggunakan angka yang sudah valid dari argumen
-    const skip = (page - 1) * limit;
-    const take = limit;
-
-    // Filter Query
-    const where = search
-    ? {
-        OR: [
-            { judul: { contains: search } },
-            { kategori: { contains: search } },
-        ],
-    }
-    : {};
-    
-
-    // try {
-    const [data, total] = await Promise.all([
-        prisma.arsip.findMany({
-            where, // Masukkan variabel where di sini
-            skip,
-            take,
-            orderBy: { created_at: "desc" },
-        }),
-        prisma.arsip.count({ 
-            where // Gunakan filter yang sama agar total count akurat saat dicari
-        }),
-    ]);
-
-    return {
-        data,
-        meta: {
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        },
-    };
-    // } catch (error) {
-    //     throw error; // Biarkan ditangkap oleh catch di route.ts
-    // }
 }
