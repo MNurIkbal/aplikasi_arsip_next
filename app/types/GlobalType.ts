@@ -28,6 +28,8 @@ export interface GetArsipParams {
   search?: string;
   page: number;
   limit: number;
+  sort : string;
+  order : string;
 }
 
 export interface ArsipPageProps {
@@ -35,3 +37,4 @@ export interface ArsipPageProps {
     serverLimit: number;
     serverSearch: string;
 }
+

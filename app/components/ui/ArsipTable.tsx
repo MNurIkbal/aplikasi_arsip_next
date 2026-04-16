@@ -3,7 +3,8 @@
 import { useState, useTransition, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table";
 import { Button } from "@/app/components/ui/button";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Pencil, Trash2 } from "lucide-react";
+// Tambahkan ArrowUpDown, ChevronUp, ChevronDown di sini
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, Pencil, Trash2, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { Input } from "@/app/components/ui/input";
 import BaseModal from "@/app/components/ui/BaseModal";
@@ -24,19 +25,27 @@ export default function ArsipClientContent({ serverPage, serverLimit, serverSear
     const [searchTerm, setSearchTerm] = useState(serverSearch);
     const [debouncedSearch] = useDebounce(searchTerm, 500);
 
+    // Ambil nilai sort dari URL (default id dan desc)
+    const currentSort = searchParams.get("sort") || "id";
+    const currentOrder = searchParams.get("order") || "desc";
+
     const { data, isLoading } = useSWR(
-        ["/api/arsip", debouncedSearch, serverPage, serverLimit],
-        () => fetchArsip({ search: debouncedSearch, page: serverPage, limit: serverLimit }),
+        ["/api/arsip", debouncedSearch, serverPage, serverLimit, currentSort, currentOrder],
+        () => fetchArsip({ 
+            search: debouncedSearch, 
+            page: serverPage, 
+            limit: serverLimit,
+            sort: currentSort,
+            order: currentOrder 
+        }),
         {
             revalidateOnFocus: false,
-            keepPreviousData: true, // Biar tabel gak kedap-kedip saat fetch
+            keepPreviousData: true,
         }
     );
 
-
     const initialData = data?.data.data || [];
-    
-    const meta = data?.meta || { total: 0, totalPages: 1 };
+    const meta = data?.data.meta || { total: 0, totalPages: 1 };
 
     const updateQuery = (newParams: Record<string, string | number>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -47,6 +56,20 @@ export default function ArsipClientContent({ serverPage, serverLimit, serverSear
         startTransition(() => {
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
         });
+    };
+
+    // Fungsi untuk handle klik header
+    const handleSort = (column: string) => {
+        const newOrder = currentSort === column && currentOrder === "asc" ? "desc" : "asc";
+        updateQuery({ sort: column, order: newOrder, page: 1 });
+    };
+
+    // Komponen Ikon Sort
+    const SortIcon = ({ column }: { column: string }) => {
+        if (currentSort !== column) return <ArrowUpDown className="ml-2 h-3 w-3 opacity-30" />;
+        return currentOrder === "asc" 
+            ? <ChevronUp className="ml-2 h-4 w-4 text-indigo-600" /> 
+            : <ChevronDown className="ml-2 h-4 w-4 text-indigo-600" />;
     };
 
     useEffect(() => {
@@ -96,7 +119,7 @@ export default function ArsipClientContent({ serverPage, serverLimit, serverSear
                         value={serverLimit.toString()} 
                         onValueChange={(v) => updateQuery({ limit: v, page: 1 })}
                     >
-                        <SelectTrigger className="w-[75px] h-9"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-[75px] cursor-pointer h-9"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             {[10, 25, 50, 100].map(val => (
                                 <SelectItem key={val} value={val.toString()}>{val}</SelectItem>
@@ -124,10 +147,30 @@ export default function ArsipClientContent({ serverPage, serverLimit, serverSear
                     <Table className="w-full table-fixed min-w-[1000px]">
                         <TableHeader className="bg-gray-50 border-b-2">
                             <TableRow>
-                                <TableHead className="w-[60px] text-center font-bold text-[11px] uppercase">No</TableHead>
-                                <TableHead className="w-[300px] font-bold text-[11px] uppercase">Judul Pengarsipan</TableHead>
-                                <TableHead className="w-[150px] text-center font-bold text-[11px] uppercase">Tanggal</TableHead>
-                                <TableHead className="w-[200px] text-center font-bold text-[11px] uppercase">Kategori</TableHead>
+                                <TableHead 
+                                    className="w-[60px] text-center font-bold text-[11px] uppercase cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSort('id')}
+                                >
+                                    <div className="flex items-center justify-center">No <SortIcon column="id" /></div>
+                                </TableHead>
+                                <TableHead 
+                                    className="w-[300px] font-bold text-[11px] uppercase cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSort('judul')}
+                                >
+                                    <div className="flex items-center">Judul Pengarsipan <SortIcon column="judul" /></div>
+                                </TableHead>
+                                <TableHead 
+                                    className="w-[150px] text-center font-bold text-[11px] uppercase cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSort('tanggal')}
+                                >
+                                    <div className="flex items-center justify-center">Tanggal <SortIcon column="tanggal" /></div>
+                                </TableHead>
+                                <TableHead 
+                                    className="w-[200px] text-center font-bold text-[11px] uppercase cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSort('kategori')}
+                                >
+                                    <div className="flex items-center justify-center">Kategori <SortIcon column="kategori" /></div>
+                                </TableHead>
                                 <TableHead className="w-[120px] text-center font-bold text-[11px] uppercase">Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -183,10 +226,10 @@ export default function ArsipClientContent({ serverPage, serverLimit, serverSear
 
             <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-1">
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => updateQuery({ page: 1 })} disabled={serverPage === 1}>
+                    <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer" onClick={() => updateQuery({ page: 1 })} disabled={serverPage === 1}>
                         <ChevronsLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => updateQuery({ page: serverPage - 1 })} disabled={serverPage === 1}>
+                    <Button variant="outline" size="icon" className="h-9 w-9 cursor-pointer" onClick={() => updateQuery({ page: serverPage - 1 })} disabled={serverPage === 1}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <div className="flex items-center gap-1 mx-2 text-sm text-black">
@@ -194,10 +237,10 @@ export default function ArsipClientContent({ serverPage, serverLimit, serverSear
                         <span className="bg-cyan-600 text-white px-2 py-1 rounded font-bold">{serverPage}</span>
                         <span>of {meta.totalPages || 1}</span>
                     </div>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => updateQuery({ page: serverPage + 1 })} disabled={serverPage >= meta.totalPages}>
+                    <Button variant="outline" size="icon" className="h-9 cursor-pointer w-9" onClick={() => updateQuery({ page: serverPage + 1 })} disabled={serverPage >= meta.totalPages}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => updateQuery({ page: meta.totalPages })} disabled={serverPage >= meta.totalPages}>
+                    <Button variant="outline" size="icon" className="h-9 cursor-pointer w-9" onClick={() => updateQuery({ page: meta.totalPages })} disabled={serverPage >= meta.totalPages}>
                         <ChevronsRight className="h-4 w-4" />
                     </Button>
                 </div>

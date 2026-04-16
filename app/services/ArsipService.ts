@@ -30,11 +30,14 @@ export async function store(data: {
     const output = fs.createWriteStream(filePath);
 
     // 2. Setup Archiver
-    const archive = archiver('zip-encryptable', {
-        zlib: { level: 9 },
-        forceLocalTime: true,
-        password: password_arsip || undefined
-    });
+    let archive = null;
+    if(kategori == "Dokumen Rahasia") {
+        archive = archiver('zip-encryptable', {
+            zlib: { level: 9 },
+            forceLocalTime: true,
+            password: password_arsip || undefined
+        });
+    }
 
     try {
         const result = await new Promise((resolve, reject) => {
@@ -106,8 +109,7 @@ export async function store(data: {
 }
 
 
-export async function getArsipResource({ search, page, limit }: GetArsipParams) {
-    // Kalkulasi pagination menggunakan angka yang sudah valid dari argumen
+export async function getArsipResource({ search, page, limit,sort,order }: GetArsipParams) {
     const skip = (page - 1) * limit;
     const take = limit;
 
@@ -122,16 +124,18 @@ export async function getArsipResource({ search, page, limit }: GetArsipParams) 
     : {};
     
 
-    // try {
+    try {
     const [data, total] = await Promise.all([
         prisma.arsip.findMany({
-            where, // Masukkan variabel where di sini
+            where,
+            orderBy: {
+            [sort]: order, 
+            }, 
             skip,
             take,
-            orderBy: { created_at: "desc" },
         }),
         prisma.arsip.count({ 
-            where // Gunakan filter yang sama agar total count akurat saat dicari
+            where //
         }),
     ]);
 
@@ -144,7 +148,7 @@ export async function getArsipResource({ search, page, limit }: GetArsipParams) 
             totalPages: Math.ceil(total / limit),
         },
     };
-    // } catch (error) {
-    //     throw error; // Biarkan ditangkap oleh catch di route.ts
-    // }
+    } catch (error) {
+        throw error; // Biarkan ditangkap oleh catch di route.ts
+    }
 }
