@@ -23,10 +23,10 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
 
   // 1. State Utama
   const [formData, setFormData] = useState<any>({
-    judul: "",
-    tanggal: "",
-    kategori: "",
-    password_arsip: "",
+    judul: "as",
+    tanggal: "2025-02-10",
+    kategori: "Dokumen Rahasia",
+    password_arsip: "123456",
   });
 
   const [additionalData, setAdditionalData] = useState([
