@@ -31,8 +31,6 @@ export interface GetArsipParams {
 }
 
 export interface ArsipPageProps {
-    initialData: any[];
-    meta: { total: number; totalPages: number };
     serverPage: number;
     serverLimit: number;
     serverSearch: string;

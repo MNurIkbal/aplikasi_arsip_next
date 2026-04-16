@@ -113,35 +113,38 @@ export async function getArsipResource({ search, page, limit }: GetArsipParams) 
 
     // Filter Query
     const where = search
-        ? {
-            judul: { 
-                contains: search,
-                mode: "insensitive" as const // Tambahkan mode ini agar search tidak case-sensitive
-            }
-        }
-        : {};
-
-    try {
-        const [data, total] = await Promise.all([
-            prisma.arsip.findMany({
-                where,
-                skip,
-                take,
-                orderBy: { created_at: "desc" },
-            }),
-            prisma.arsip.count({ where }),
-        ]);
-
-        return {
-            data,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-        };
-    } catch (error) {
-        throw error; // Biarkan ditangkap oleh catch di route.ts
+    ? {
+        OR: [
+            { judul: { contains: search } },
+            { kategori: { contains: search } },
+        ],
     }
+    : {};
+    
+
+    // try {
+    const [data, total] = await Promise.all([
+        prisma.arsip.findMany({
+            where, // Masukkan variabel where di sini
+            skip,
+            take,
+            orderBy: { created_at: "desc" },
+        }),
+        prisma.arsip.count({ 
+            where // Gunakan filter yang sama agar total count akurat saat dicari
+        }),
+    ]);
+
+    return {
+        data,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
+    // } catch (error) {
+    //     throw error; // Biarkan ditangkap oleh catch di route.ts
+    // }
 }

@@ -12,16 +12,20 @@ export async function GET(request: NextRequest) {
   const page = Number(searchParams.get("page") || "1");
   const limit = Number(searchParams.get("limit") || "10");
 
-  try {
+  // try {
     // Panggil Logic dari Resource
+    
     const result = await getArsipResource({ search, page, limit });
+    console.log(result);
+    
+    
 
     // Kirim Response
     return successResponse(result,"Data berhasil ditampilkan",200);
-  } catch (error) {
-    console.error("API Error:", error);
-    return sendError('Gagal memuat data arsip',500,null);
-  }
+  // } catch (error) {
+  //   console.error("API Error:", error);
+  //   return sendError('Gagal memuat data arsip',500,null);
+  // }
 }
 
 export async function POST(req: NextRequest) {
