@@ -7,150 +7,34 @@ import {
   Upload, Plus, Trash2, Lock, ShieldCheck, Globe,
   Calendar, FolderEdit
 } from "lucide-react";
-import Swal from "sweetalert2";
-import { useMutation } from "@tanstack/react-query";
-import { validateArsip } from "@/app/utils/validation";
-import { createArsip } from "@/app/services/fontend/ArsipService";
-import { mutate } from "swr";
 import { ArsipFormProps } from "@/app/types/GlobalType";
-import { formatDate, formatDateIndonesia, formatDateInput, parseJSON } from "@/app/utils/helper";
+import { DOKUMEN_KHUSUS, DOKUMEN_RAHASIA, DOKUMEN_UMUM } from "@/app/types/Constant";
+import { useArsipForm } from "@/app/hooks/ArsipForm";
 
 export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipFormProps) {
 
+  const {
+    formData,
+    setFormData,
+    additionalData,
+    errors,
+    showPassword,
+    setShowPassword,
+    addField,
+    removeField,
+    handleInputChange,
+    handleFileChange,
+    handlePreview,
+    handleSubmit
+  } = useArsipForm(initialData, onCancel);
 
-  // 1. State Utama
-  const [formData, setFormData] = useState<any>({
-    judul: "",
-    tanggal: "",
-    kategori: "",
-    password_arsip: "",
-    params: "",
-  });
-
-  const [additionalData, setAdditionalData] = useState([
-    { id: Date.now(), nama_dokumen: "", file: null as File | null }
-  ]);
-
-  const [errors, setErrors] = useState<any>({});
-  const [showPassword, setShowPassword] = useState(false);
+  let params = Array.isArray(formData.params) ? formData.params : [];
 
   const kategoriOptions = [
-    { value: "Dokumen Umum", label: "Dokumen Umum", icon: <Globe size={16} /> },
-    { value: "Dokumen Khusus", label: "Dokumen Khusus", icon: <ShieldCheck size={16} /> },
-    { value: "Dokumen Rahasia", label: "Dokumen Rahasia", icon: <Lock size={16} /> },
+    { value: DOKUMEN_UMUM, label: DOKUMEN_UMUM, icon: <Globe size={16} /> },
+    { value: DOKUMEN_KHUSUS, label: DOKUMEN_KHUSUS, icon: <ShieldCheck size={16} /> },
+    { value: DOKUMEN_RAHASIA, label: DOKUMEN_RAHASIA, icon: <Lock size={16} /> }
   ];
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        judul: initialData.judul || "",
-        tanggal: initialData.tanggal || new Date().toISOString().split('T')[0],
-        kategori: initialData.kategori || "",
-        password_arsip: initialData.password_arsip || "",
-        params: parseJSON(initialData.params) || "",
-      });
-    }
-  }, [initialData]);
-
-  
-  // --- HANDLER DYNAMIC FIELDS ---
-  const addField = () => {
-    // Batasan Maksimal 10
-    if (additionalData.length >= 10) {
-      Swal.fire({
-        icon: "warning",
-        title: "Batas Maksimal",
-        text: "Anda hanya dapat mengupload maksimal 10 dokumen tambahan.",
-        confirmButtonColor: "#4F46E5"
-      });
-      return;
-    }
-
-    setAdditionalData([
-      ...additionalData,
-      { id: Date.now(), nama_dokumen: "", file: null }
-    ]);
-  };
-
-  const removeField = (id: number) => {
-    if (additionalData.length > 1) {
-      setAdditionalData(additionalData.filter((item) => item.id !== id));
-    } else {
-      Swal.fire({
-        icon: "info",
-        title: "Minimal 1 Baris",
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2000
-      });
-    }
-  };
-
-  const handleInputChange = (id: number, value: string) => {
-    setAdditionalData(additionalData.map(item =>
-      item.id === id ? { ...item, nama_dokumen: value } : item
-    ));
-  };
-
-  const handleFileChange = (id: number, file: File | undefined) => {
-    if (file) {
-      if (file.size > 50 * 1024 * 1024) {
-        Swal.fire("File Terlalu Besar", "Maksimal ukuran file adalah 50MB", "error");
-        return;
-      }
-      // UPDATE: Hanya simpan file, tidak mengubah nama_dokumen (Free Text)
-      setAdditionalData(additionalData.map(item =>
-        item.id === id ? { ...item, file: file } : item
-      ));
-    }
-  };
-
-  // --- SUBMIT HANDLER ---
-
-  // Inisialisasi Mutasi
-  const mutation = useMutation({
-    mutationFn: (newArsip: any) => createArsip(newArsip),
-    onSuccess: async () => {
-      await mutate(
-        (key) => Array.isArray(key) && key[0] === "/api/arsip"
-      );
-      Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
-      onCancel(); // Tutup form
-    },
-    onError: (error: any) => {
-      Swal.fire("Gagal", error.message || "Terjadi kesalahan", "error");
-    }
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const dataToValidate = {
-      ...formData,
-      nama_dokumen: additionalData
-    };
-
-    const validation = validateArsip(dataToValidate, !!initialData);
-
-    if (!validation.isValid) {
-      setErrors(validation.errors);
-      return;
-    }
-    setErrors({});
-
-    Swal.fire({
-      title: "Menyimpan Arsip...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    // Eksekusi pemanggilan API melalui mutation
-    mutation.mutate({
-      ...formData,
-      attachments: additionalData
-    });
-  };
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
@@ -179,7 +63,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
           <input
             type="date"
             className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-              value={formatDate(formData.tanggal)}
+            value={formatDate(formData.tanggal)}
 
             onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
           />
@@ -292,7 +176,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
                 )}
               </div>
 
-              
+
               <div className="md:col-span-5 spac-1">
                 <label className="text-[11px] font-bold text-gray-400 uppercase">Upload File (Max 50MB)</label>
                 <label className={`flex items-center gap-2 w-full px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer transition-all ${item.file ? "bg-indigo-50 border-indigo-200 text-indigo-700" : "bg-gray-50 border-gray-200 text-gray-500 hover:border-indigo-400 hover:bg-white"
@@ -337,7 +221,85 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
         </div>
       </fieldset>
 
-      
+      <fieldset className="border border-gray-200 p-5 rounded-2xl bg-gray-50/50 space-y-5">
+        <div className="space-y-4">
+          {params.map((item, index) => (
+            <div
+              key={item.id}
+              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all hover:border-indigo-200"
+            >
+              <div className="md:col-span-5 space-y-1">
+                <label className="text-[11px] font-bold text-gray-400 uppercase">Nama Dokumen {index + 1}</label>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Contoh: Lampiran A, Surat Izin, dll..."
+                    className="w-full pl-9 pr-3 py-2  border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    value={item.nama_dokumen}
+                  />
+                </div>
+              </div>
+
+
+              <div className="md:col-span-5 space-y-1">
+                <div className="flex gap-2 items-center">
+
+                  {/* Upload */}
+                  <label
+                    className={`flex items-center gap-2 w-full px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer transition-all ${item.file
+                        ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                        : "bg-gray-50 border-gray-200 text-gray-500 hover:border-indigo-400 hover:bg-white"
+                      }`}
+                  >
+                    <Upload size={16} className={item.file ? "text-indigo-500" : "text-gray-400"} />
+                    <span className="text-xs truncate font-medium">
+                      {item.file ? item.file.name : "Pilih dokumen..."}
+                    </span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                      onChange={(e) => handleFileChange(item.id, e.target.files?.[0])}
+                    />
+                  </label>
+
+                  {/* Preview Button */}
+                  <button
+                    type="button"
+                    onClick={() => handlePreview(item.file)}
+                    disabled={!item.file}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    title="Preview file"
+                  >
+                    <Eye size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => removeField(item.id)}
+                  className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  title="Hapus baris"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-between items-center text-[10px] text-gray-400 italic">
+          <p>* Format: PDF, DOCX, XLSX, JPG, PNG (Max 50MB per file)</p>
+          <p className={additionalData.length === 10 ? "text-red-500 font-bold" : ""}>
+            {additionalData.length} / 10 Terpakai
+          </p>
+        </div>
+      </fieldset>
+
+
       <div className="flex gap-3 pt-4">
         <button
           type="button"

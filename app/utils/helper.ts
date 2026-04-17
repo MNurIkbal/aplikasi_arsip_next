@@ -85,3 +85,18 @@ export const parseJSON = (value: any) => {
     return {};
   }
 };
+
+
+export type ParamArsip = {
+  id: number;
+  nama_dokumen: string;
+  file?: File | null;
+};
+
+export type FieldArsip = {
+  judul: string;
+  tanggal: string;
+  kategori: string;
+  password_arsip: string;
+  params: ParamArsip[];
+};
