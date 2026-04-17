@@ -67,3 +67,21 @@ export const formatDateIndonesia = (date: Date | string | null | undefined): str
     year: "numeric",
   });
 };
+
+export const formatDate = (date?: string | null): string => {
+  if (!date) return "";
+  return date.split("T")[0];
+};
+
+export const parseJSON = (value: any) => {
+  if (!value) return {};
+
+  if (typeof value === "object") return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    console.error("JSON parse error:", error);
+    return {};
+  }
+};

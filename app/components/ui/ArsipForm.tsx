@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Select from "react-select";
 import {
   FileText, Eye, EyeOff, AlertCircle,
@@ -13,6 +13,7 @@ import { validateArsip } from "@/app/utils/validation";
 import { createArsip } from "@/app/services/fontend/ArsipService";
 import { mutate } from "swr";
 import { ArsipFormProps } from "@/app/types/GlobalType";
+import { formatDate, formatDateIndonesia, formatDateInput, parseJSON } from "@/app/utils/helper";
 
 export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipFormProps) {
 
@@ -23,6 +24,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
     tanggal: "",
     kategori: "",
     password_arsip: "",
+    params: "",
   });
 
   const [additionalData, setAdditionalData] = useState([
@@ -44,11 +46,13 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
         judul: initialData.judul || "",
         tanggal: initialData.tanggal || new Date().toISOString().split('T')[0],
         kategori: initialData.kategori || "",
-        password_arsip: "",
+        password_arsip: initialData.password_arsip || "",
+        params: parseJSON(initialData.params) || "",
       });
     }
   }, [initialData]);
 
+  
   // --- HANDLER DYNAMIC FIELDS ---
   const addField = () => {
     // Batasan Maksimal 10
@@ -108,8 +112,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
   const mutation = useMutation({
     mutationFn: (newArsip: any) => createArsip(newArsip),
     onSuccess: async () => {
-      // REFRESH DATA: Invalidate query yang menyimpan list arsip
-       await mutate(
+      await mutate(
         (key) => Array.isArray(key) && key[0] === "/api/arsip"
       );
       Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
@@ -148,6 +151,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
       attachments: additionalData
     });
   };
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
 
@@ -175,7 +179,8 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
           <input
             type="date"
             className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            value={formData.tanggal}
+              value={formatDate(formData.tanggal)}
+
             onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
           />
           {errors.tanggal && <p className="text-[11px] text-red-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.tanggal}</p>}
@@ -268,7 +273,6 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
               key={item.id}
               className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all hover:border-indigo-200"
             >
-              {/* Kolom Nama Dokumen (FREE TEXT) */}
               <div className="md:col-span-5 space-y-1">
                 <label className="text-[11px] font-bold text-gray-400 uppercase">Nama Dokumen {index + 1}</label>
                 <div className="relative">
@@ -288,7 +292,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
                 )}
               </div>
 
-              {/* Kolom Upload File */}
+              
               <div className="md:col-span-5 spac-1">
                 <label className="text-[11px] font-bold text-gray-400 uppercase">Upload File (Max 50MB)</label>
                 <label className={`flex items-center gap-2 w-full px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer transition-all ${item.file ? "bg-indigo-50 border-indigo-200 text-indigo-700" : "bg-gray-50 border-gray-200 text-gray-500 hover:border-indigo-400 hover:bg-white"
@@ -311,7 +315,6 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
                 )}
               </div>
 
-              {/* Kolom Action */}
               <div className="md:col-span-2 flex justify-end">
                 <button
                   type="button"
@@ -334,7 +337,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
         </div>
       </fieldset>
 
-      {/* FOOTER ACTIONS */}
+      
       <div className="flex gap-3 pt-4">
         <button
           type="button"
