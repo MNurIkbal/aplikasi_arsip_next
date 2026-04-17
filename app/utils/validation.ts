@@ -62,92 +62,86 @@ export enum KategoriArsip {
 
 export const validateArsip = (data: any, isEdit: boolean) => {
   const schema = z.object({
-    // Judul wajib diisi
     judul: z.string().min(1, "Judul wajib diisi"),
-
-    // Tanggal wajib diisi (Format YYYY-MM-DD)
     tanggal: z.string().min(1, "Tanggal wajib diisi"),
-
-    // Kategori wajib diisi
     kategori: z.nativeEnum(KategoriArsip, {
       errorMap: () => ({ message: "Kategori wajib dipilih" }),
     }),
 
-    // Password minimal 6 karakter (Hanya wajib jika Rahasia)
+    // Perbaikan pada password_arsip
     password_arsip: z
       .string()
+      .nullable() // Izinkan null secara eksplisit
       .optional()
       .refine(
         (val) => {
+          // JIKA KATEGORI RAHASIA
           if (data.kategori === KategoriArsip.RAHASIA) {
-            // Jika edit dan input kosong, anggap pakai password lama (valid)
-            // Jika input ada isinya, harus minimal 6 karakter
+            // Saat edit: boleh kosong (pakai password lama) atau minimal 6 karakter
             if (isEdit && (!val || val.length === 0)) return true;
-            return val && val.length >= 6;
+            // Saat baru/isi ulang: harus ada dan minimal 6 karakter
+            return val !== null && val !== undefined && val.length >= 6;
           }
-          return true;
+          
+          // JIKA BUKAN RAHASIA
+          return true; // Validasi lolos (boleh null/kosong)
         },
         {
-          message:
-            "Password minimal 6 karakter wajib diisi untuk dokumen rahasia",
-        },
+          message: "Password minimal 6 karakter wajib diisi untuk dokumen rahasia",
+        }
       ),
 
-    // Additional Data (Array)
     nama_dokumen: z
       .array(
         z.object({
-          // Nama dokumen di additional data WAJIB diisi
           nama_dokumen: z.string().min(1, "Nama dokumen wajib diisi"),
-
-          // Validasi File
           file: isEdit
-            ? z.any().optional() // Saat edit boleh tidak upload ulang
+            ? z.any().optional()
             : z
                 .instanceof(File, { message: "File wajib diunggah" })
-                .refine(
-                  (file) => file.size <= 50 * 1024 * 1024,
-                  "Ukuran file maksimal 50MB",
-                )
+                .refine((file) => file.size <= 50 * 1024 * 1024, "Ukuran file maksimal 50MB")
                 .refine(
                   (file) =>
                     [
                       "application/pdf",
                       "application/msword",
-                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Word
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                       "application/vnd.ms-excel",
-                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // Excel
+                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                       "image/jpeg",
                       "image/png",
                       "image/jpg",
                     ].includes(file.type),
-                  "Format harus PDF, Word, Excel, atau Gambar (JPG/PNG)",
+                  "Format harus PDF, Word, Excel, atau Gambar (JPG/PNG)"
                 ),
-        }),
+        })
       )
-      .min(1, "Minimal harus ada 1 dokumen tambahan") // Menjamin list tidak kosong
+      .min(1, "Minimal harus ada 1 dokumen tambahan")
       .max(10, "Maksimal 10 dokumen tambahan"),
   });
 
-  const result = schema.safeParse(data);
+  // LOGIKA TAMBAHAN: Paksa password menjadi null jika kategori bukan RAHASIA
+  // Ini penting agar saat dikirim ke backend, data tetap konsisten.
+  const preparedData = {
+    ...data,
+    password_arsip: data.kategori === KategoriArsip.RAHASIA ? data.password_arsip : null,
+  };
 
-  // Di file validation.ts
+  const result = schema.safeParse(preparedData);
+
   if (!result.success) {
     const formattedErrors = result.error.format();
-
     return {
       isValid: false,
-      // Error tingkat atas (judul, tanggal, kategori)
       errors: {
         judul: formattedErrors.judul?._errors[0],
         tanggal: formattedErrors.tanggal?._errors[0],
         kategori: formattedErrors.kategori?._errors[0],
         password_arsip: formattedErrors.password_arsip?._errors[0],
-        // Error khusus array nama_dokumen
-        attachments: formattedErrors.nama_dokumen, // ini akan berisi array of errors
+        attachments: formattedErrors.nama_dokumen,
       },
     };
   }
 
-  return { isValid: true, errors: {} };
+  return { isValid: true, errors: {}, data: result.data };
 };

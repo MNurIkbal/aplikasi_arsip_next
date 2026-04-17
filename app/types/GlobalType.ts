@@ -38,3 +38,9 @@ export interface ArsipPageProps {
     serverSearch: string;
 }
 
+
+export interface ArsipFormProps {
+  initialData?: any;
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
+}

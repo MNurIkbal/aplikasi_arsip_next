@@ -19,14 +19,12 @@ export const createArsip = async (payload: any) => {
     }
   });
 
-  // TIPS: Untuk melihat isi FormData di console gunakan ini:
-  // for (let pair of formData.entries()) { console.log(pair[0] + ': ' + pair[1]); }
 
   const response = await fetch("/api/arsip", { 
     method: "POST",
     body: formData,
   });
-
+  
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || "Gagal menyimpan data");

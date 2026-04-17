@@ -82,11 +82,10 @@ export default function Header() {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 p-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200"
-        >
+          className="flex items-center gap-2 p-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200" >
           <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
             <Image
-            src={displayImage || "/uploads/1775880667188-user.png"}
+            src={ '/' + displayImage || '/uploads/1775881364762-user.png'}
             alt="User Image"
             width={60}
             height={60}

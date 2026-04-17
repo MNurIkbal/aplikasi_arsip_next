@@ -11,16 +11,13 @@ import Swal from "sweetalert2";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { validateArsip } from "@/app/utils/validation";
 import { createArsip } from "@/app/services/fontend/ArsipService";
-
-interface ArsipFormProps {
-  initialData?: any;
-  onSubmit: (data: any) => void;
-  onCancel: () => void;
-}
+import { useSWRConfig } from "swr";
+import { ArsipFormProps } from "@/app/types/GlobalType";
 
 export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipFormProps) {
   const queryClient = useQueryClient();
 
+  const { mutate } = useSWRConfig();
   // 1. State Utama
   const [formData, setFormData] = useState<any>({
     judul: "",
@@ -111,10 +108,9 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
   // Inisialisasi Mutasi
   const mutation = useMutation({
     mutationFn: (newArsip: any) => createArsip(newArsip),
-    onSuccess: () => {
+    onSuccess: async () => {
       // REFRESH DATA: Invalidate query yang menyimpan list arsip
-      queryClient.invalidateQueries({ queryKey: ["arsip"] });
-
+     
       Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
       onCancel(); // Tutup form
     },

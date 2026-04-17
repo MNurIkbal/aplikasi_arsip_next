@@ -2,6 +2,7 @@ import { sendError, successResponse } from "@/app/utils/response";
 import { validateArsip } from "@/app/utils/validation";
 import { getArsipResource, store } from "@/app/services/ArsipService";
 import { NextRequest } from "next/server";
+import { DOKUMEN_RAHASIA } from "@/app/types/Constant";
 
 
 export async function GET(request: NextRequest) {
@@ -56,24 +57,24 @@ export async function POST(req: NextRequest) {
       nama_dokumen: attachments,
     };
 
+    
     const validation = validateArsip(dataToValidate, false);
-
     if (!validation.isValid) {
       const errorMessages = Object.values(validation.errors);
       const firstErrorMessage = errorMessages.length > 0 ? errorMessages[0] : "Validasi gagal";
       return sendError(firstErrorMessage as string, 400, validation.errors);
     }
+    
 
     // Eksekusi Store (Sekarang mengembalikan object dari Database)
     const result = await store({
       judul,
       tanggal,
       kategori,
-      password_arsip: kategori === "Dokumen Rahasia" ? password_arsip : null, // Hanya kirim password jika Rahasia
+      password_arsip: kategori === DOKUMEN_RAHASIA ? password_arsip : null, // Hanya kirim password jika Rahasia
       attachments
     });
 
-    console.log(result);
 
     if (result.ok) {
       const data = await result.json();

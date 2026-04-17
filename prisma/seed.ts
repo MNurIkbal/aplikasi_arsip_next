@@ -29,7 +29,7 @@ async function main() {
     email: faker.internet.email().toLowerCase(),
     password: passwordHash,
     role: i === 0 ? Role.Admin : Role.Pegawai,
-    image:  "uploads/1775836241202-sa.jpg",
+    image:  "uploads/1775881364762-user.png",
     created_at: getJakartaDate(), // Gunakan helper untuk waktu WIB
   }));
 

@@ -7,6 +7,8 @@ import { prisma } from "../utils/prisma";
 import { successResponse, sendError } from "../utils/response"; // Pastikan sendError tersedia
 import bcrypt from "bcrypt";
 import { GetArsipParams } from "../types/GlobalType";
+import { DOKUMEN_RAHASIA } from "../types/Constant";
+import { nowWib } from "../utils/helper";
 
 archiver.registerFormat('zip-encryptable', zipEncryptable);
 
@@ -29,18 +31,28 @@ export async function store(data: {
     const filePath = path.join(uploadDir, fileName);
     const output = fs.createWriteStream(filePath);
 
-    // 2. Setup Archiver
-    let archive = null;
-    if(kategori == "Dokumen Rahasia") {
+    // 2. Setup Archiver (LOGIKA DIPERBAIKI)
+    let archive: any;
+    
+
+    if (kategori === DOKUMEN_RAHASIA && password_arsip) {
+        // Jika rahasia, gunakan zip-encryptable dengan password
         archive = archiver('zip-encryptable', {
             zlib: { level: 9 },
             forceLocalTime: true,
             password: password_arsip || undefined
         });
+    } else {
+        
+        // Jika selain Dokumen Rahasia, gunakan archiver standar tanpa password
+        archive = archiver('zip', {
+            zlib: { level: 9 }
+        });
     }
 
     try {
-        const result = await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
+            // Event ketika file selesai ditulis ke disk
             output.on('close', async () => {
                 try {
                     // Mapping Params ke JSON
@@ -52,7 +64,7 @@ export async function store(data: {
                         };
                     });
 
-                    // Hashing Password jika Rahasia
+                    // Hashing Password hanya jika Rahasia & ada password
                     let hashedPassword = null;
                     if (kategori === "Dokumen Rahasia" && password_arsip) {
                         hashedPassword = await bcrypt.hash(password_arsip, 10);
@@ -63,9 +75,11 @@ export async function store(data: {
                         data: {
                             judul,
                             tanggal: new Date(tanggal),
-                            kategori: kategori, // Casting Enum
+                            kategori: kategori,
                             password_arsip: hashedPassword,
-                            params: JSON.stringify(paramsJson), // Format JSON
+                            params: JSON.stringify(paramsJson),
+                            created_at: nowWib(),
+                            updated_at: null
                         }
                     });
 
@@ -75,7 +89,10 @@ export async function store(data: {
                 }
             });
 
+            // Handle error pada archiver
             archive.on('error', (err: any) => reject(err));
+
+            // Pipe data archive ke file output
             archive.pipe(output);
 
             const processAttachments = async () => {
@@ -86,9 +103,11 @@ export async function store(data: {
                             const buffer = Buffer.from(arrayBuffer);
                             const originalExt = path.extname(item.file.name);
                             const internalFileName = `${item.nama_dokumen}${originalExt}`;
+                            
                             archive.append(buffer, { name: internalFileName });
                         }
                     }
+                    // Selesaikan proses archiver
                     archive.finalize();
                 } catch (err) {
                     reject(err);
@@ -98,11 +117,9 @@ export async function store(data: {
             processAttachments();
         });
 
-        // JIKA BERHASIL
         return successResponse(null, 'Data berhasil ditambahkan', 201);
 
     } catch (error: any) {
-        // JIKA ERROR
         console.error("Store Service Error:", error);
         return sendError(error.message || "Gagal memproses data", 500);
     }
