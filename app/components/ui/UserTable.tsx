@@ -264,7 +264,6 @@ export default function UserTable() {
                   >
                     <div className="flex items-center justify-between w-full">
 
-                      {/* Title */}
                       <span>
                         {flexRender(
                           header.column.columnDef.header,
@@ -272,7 +271,6 @@ export default function UserTable() {
                         )}
                       </span>
 
-                      {/* Sort Icon */}
                       <span className="ml-2 w-4 text-right">
                         {{
                           asc: "↑",
@@ -287,7 +285,6 @@ export default function UserTable() {
             ))}
           </thead>
 
-          {/* TBODY */}
           <tbody className="divide-y divide-gray-100">
             {isLoading ? (
               <tr>
@@ -325,7 +322,6 @@ export default function UserTable() {
         </table>
       </div>
 
-      {/* FOOTER */}
       <div className="p-5 border-t border-gray-100 flex items-center justify-between">
 
         <p className="text-sm text-gray-500">

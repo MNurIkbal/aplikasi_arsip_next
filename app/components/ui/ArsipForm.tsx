@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Select from "react-select";
 import {
   FileText, Eye, EyeOff, AlertCircle,
@@ -10,6 +9,9 @@ import {
 import { ArsipFormProps } from "@/app/types/GlobalType";
 import { DOKUMEN_KHUSUS, DOKUMEN_RAHASIA, DOKUMEN_UMUM } from "@/app/types/Constant";
 import { useArsipForm } from "@/app/hooks/ArsipForm";
+import { confirmDelete, formatDate } from "@/app/utils/helper";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipFormProps) {
 
@@ -28,6 +30,8 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
     handleSubmit
   } = useArsipForm(initialData, onCancel);
 
+  const router = useRouter();
+  
   let params = Array.isArray(formData.params) ? formData.params : [];
 
   const kategoriOptions = [
@@ -36,6 +40,8 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
     { value: DOKUMEN_RAHASIA, label: DOKUMEN_RAHASIA, icon: <Lock size={16} /> }
   ];
 
+  const queryClient = useQueryClient();
+  
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
 
@@ -221,83 +227,69 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
         </div>
       </fieldset>
 
-      <fieldset className="border border-gray-200 p-5 rounded-2xl bg-gray-50/50 space-y-5">
-        <div className="space-y-4">
-          {params.map((item, index) => (
-            <div
-              key={item.id}
-              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all hover:border-indigo-200"
-            >
-              <div className="md:col-span-5 space-y-1">
-                <label className="text-[11px] font-bold text-gray-400 uppercase">Nama Dokumen {index + 1}</label>
-                <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    placeholder="Contoh: Lampiran A, Surat Izin, dll..."
-                    className="w-full pl-9 pr-3 py-2  border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    value={item.nama_dokumen}
-                  />
-                </div>
-              </div>
-
-
-              <div className="md:col-span-5 space-y-1">
-                <div className="flex gap-2 items-center">
-
-                  {/* Upload */}
-                  <label
-                    className={`flex items-center gap-2 w-full px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer transition-all ${item.file
-                        ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                        : "bg-gray-50 border-gray-200 text-gray-500 hover:border-indigo-400 hover:bg-white"
-                      }`}
-                  >
-                    <Upload size={16} className={item.file ? "text-indigo-500" : "text-gray-400"} />
-                    <span className="text-xs truncate font-medium">
-                      {item.file ? item.file.name : "Pilih dokumen..."}
-                    </span>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-                      onChange={(e) => handleFileChange(item.id, e.target.files?.[0])}
+      {params.length > 0 && (
+        <fieldset className="border border-gray-200 p-5 rounded-2xl bg-gray-50/50 space-y-5">
+          <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+            <div className="flex flex-col">
+              <legend className="px-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                Dokumen File
+              </legend>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {params.map((item, index) => (
+              <div
+                key={item.id}
+                className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all hover:border-indigo-200"
+              >
+                <div className="md:col-span-5 space-y-1">
+                  <label className="text-[11px] font-bold text-gray-400 uppercase">Nama Dokumen {index + 1}</label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input readOnly disabled
+                      type="text"
+                      placeholder="Contoh: Lampiran A, Surat Izin, dll..."
+                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm outline-none
+                        bg-gray-100 text-gray-500 cursor-not-allowed"
+                      value={item.nama_dokumen}
                     />
-                  </label>
+                  </div>
+                </div>
 
-                  {/* Preview Button */}
+
+                <div className="md:col-span-5 spac-1">
+                  <label className="text-[11px] font-bold text-gray-400 uppercase">Dokumen File</label>
                   <button
                     type="button"
                     onClick={() => handlePreview(item.file)}
                     disabled={!item.file}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    className="w-10 h-10 cursor-pointer flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
                     title="Preview file"
                   >
                     <Eye size={18} />
                   </button>
                 </div>
-              </div>
 
-              <div className="md:col-span-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => removeField(item.id)}
-                  className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                  title="Hapus baris"
-                >
-                  <Trash2 size={20} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                <div className="md:col-span-2 flex justify-end">
+                  <button
+                    onClick={() =>
+                      confirmDelete(`/api/arsip/${item.id}`, () => {
+                        queryClient.invalidateQueries({ queryKey: ["arsip"] });
 
-        <div className="flex justify-between items-center text-[10px] text-gray-400 italic">
-          <p>* Format: PDF, DOCX, XLSX, JPG, PNG (Max 50MB per file)</p>
-          <p className={additionalData.length === 10 ? "text-red-500 font-bold" : ""}>
-            {additionalData.length} / 10 Terpakai
-          </p>
-        </div>
-      </fieldset>
+                        router.refresh();
+                      })
+                    }
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                    title="Hapus Data"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
 
       <div className="flex gap-3 pt-4">
