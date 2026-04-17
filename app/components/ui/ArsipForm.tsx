@@ -8,16 +8,15 @@ import {
   Calendar, FolderEdit
 } from "lucide-react";
 import Swal from "sweetalert2";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { validateArsip } from "@/app/utils/validation";
 import { createArsip } from "@/app/services/fontend/ArsipService";
-import { useSWRConfig } from "swr";
+import { mutate } from "swr";
 import { ArsipFormProps } from "@/app/types/GlobalType";
 
 export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipFormProps) {
-  const queryClient = useQueryClient();
 
-  const { mutate } = useSWRConfig();
+
   // 1. State Utama
   const [formData, setFormData] = useState<any>({
     judul: "",
@@ -110,7 +109,9 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
     mutationFn: (newArsip: any) => createArsip(newArsip),
     onSuccess: async () => {
       // REFRESH DATA: Invalidate query yang menyimpan list arsip
-     
+       await mutate(
+        (key) => Array.isArray(key) && key[0] === "/api/arsip"
+      );
       Swal.fire("Berhasil!", "Data arsip berhasil disimpan.", "success");
       onCancel(); // Tutup form
     },
