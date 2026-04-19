@@ -1,29 +1,28 @@
-import { deleteArsip } from "@/app/services/ArsipService";
+import { HapusArsipDOkumen } from "@/app/services/ArsipService";
 import { sendError, successResponse } from "@/app/utils/response";
 
 export async function DELETE(
   req: Request, 
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> } // 'id' di sini adalah index
 ) {
   try {
-
     const { id } = await params;
-    const userId = Number(id);
+    const indexToDelete = Number(id);
 
-
-    if (isNaN(userId)) {
-      return sendError("ID tidak valid", 400);
+    if (isNaN(indexToDelete)) {
+      return sendError("Index tidak valid", 400);
     }
 
-    const hapus = await deleteArsip(userId);
+    // Panggil fungsi hapus
+    const hapus = await HapusArsipDOkumen(indexToDelete);
 
     if (hapus) {
-      return successResponse(null, hapus.message, 200);
+      return successResponse(null, "Item berhasil dihapus", 200);
     } 
     
-    return sendError("User tidak ditemukan", 404);
+    return sendError("Data tidak ditemukan", 404);
 
   } catch (error: any) {
-    return sendError(error.message || "Gagal menghapus user", 500);
+    return sendError(error.message, 500);
   }
 }

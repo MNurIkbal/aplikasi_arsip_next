@@ -167,27 +167,24 @@ export async function getArsipResource({ search, page, limit, sort, order }: Get
         throw error;
     }
 }
+export async function HapusArsipDOkumen(indexToDelete: number) {
+    // Ambil data (sesuaikan query ini dengan kebutuhanmu, misal data terbaru)
+    const arsip = await prisma.arsip.findFirst(); 
 
+    if (!arsip) return null;
 
-export async function deleteArsip(id: number) {
-    const arsip = await prisma.arsip.findUnique({
-        where: { id },
-    });
+    let currentData = JSON.parse(arsip.file as string || "[]");
 
-    if (!arsip) {
-        return {
-            message: "Arsip Tidak Ditemukan"
-        };
+    if (indexToDelete > -1 && indexToDelete < currentData.length) {
+        currentData.splice(indexToDelete, 1);
+    } else {
+        throw new Error("Index di luar jangkauan");
     }
 
-    await prisma.arsip.update({
-        where: { id },
+    return await prisma.arsip.update({
+        where: { id: arsip.id },
         data: {
-            deleted_at: nowWib(),
+            file: JSON.stringify(currentData),
         },
     });
-
-    return {
-        message: "Arsip berhasil dihapus"
-    };
 }

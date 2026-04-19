@@ -41,6 +41,7 @@ export const confirmDelete = async (url: string, onSuccess?: () => void) => {
       const response = await fetch(`${url}`, {
         method: "DELETE",
       });
+      console.log(result);
 
       if (!response.ok) throw new Error("Gagal menghapus data");
       const data = await response.json();

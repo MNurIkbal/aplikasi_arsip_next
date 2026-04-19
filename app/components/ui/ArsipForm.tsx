@@ -273,7 +273,7 @@ export default function ArsipForm({ initialData, onSubmit, onCancel }: ArsipForm
                 <div className="md:col-span-2 flex justify-end">
                   <button
                     onClick={() =>
-                      confirmDelete(`/api/arsip/${item.id}`, () => {
+                      confirmDelete(`/api/arsip/${index}`, () => {
                         queryClient.invalidateQueries({ queryKey: ["arsip"] });
 
                         router.refresh();
