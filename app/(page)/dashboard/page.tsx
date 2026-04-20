@@ -27,7 +27,6 @@ export default function DashboardPage() {
           <div className="text-center md:text-left">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Total Pengarsipan</h2>
             <p className="text-3xl font-black text-gray-800 mt-1">2,300</p>
-            {/* Catatan: Saya hapus simbol '$' karena ini konteksnya arsip/jumlah file */}
           </div>
           <div className="p-3 bg-emerald-50 rounded-xl">
             <FileText className="text-emerald-600" size={28} />

@@ -39,6 +39,8 @@ export default function ArsipForm({ initialData, onCancel }: ArsipFormProps) {
     { value: DOKUMEN_KHUSUS, label: DOKUMEN_KHUSUS, icon: <ShieldCheck size={16} /> },
     { value: DOKUMEN_RAHASIA, label: DOKUMEN_RAHASIA, icon: <Lock size={16} /> }
   ];
+
+  const id = formData.id;
   
 
   const queryClient = useQueryClient();
@@ -245,7 +247,7 @@ export default function ArsipForm({ initialData, onCancel }: ArsipFormProps) {
           <div className="space-y-4">
             {params.map((item, index) => (
               <div
-                key={item.id}
+                key={index}
                 className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all hover:border-indigo-200"
               >
                 <div className="md:col-span-5 space-y-1">
@@ -276,21 +278,6 @@ export default function ArsipForm({ initialData, onCancel }: ArsipFormProps) {
                   </button>
                 </div>
 
-                <div className="md:col-span-2 flex justify-end">
-                  <button
-                    onClick={() =>
-                      confirmDelete(`/api/arsip/${index}`, () => {
-                        queryClient.invalidateQueries({ queryKey: ["arsip"] });
-
-                        router.refresh();
-                      })
-                    }
-                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                    title="Hapus Data"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
               </div>
             ))}
           </div>

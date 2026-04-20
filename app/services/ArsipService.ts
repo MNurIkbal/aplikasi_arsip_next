@@ -52,13 +52,17 @@ export async function store(data: {
                     const paramsJson = attachments.map((item) => {
                         return {
                             nama_dokumen: item.nama_dokumen,
-                            file: item.savedFileName || null,
-                            zip: `/uploads/zip/${fileName}`
+                            file: item.savedFileName || null
                         };
                     });
 
+                    const finalData = {
+                        items: paramsJson,
+                        zip: `/uploads/zip/${fileName}`
+                    };
+
                     let hashedPassword = null;
-                    if (kategori === "Dokumen Rahasia" && password_arsip) {
+                    if (kategori === DOKUMEN_RAHASIA && password_arsip) {
                         hashedPassword = await bcrypt.hash(password_arsip, 10);
                     }
 
@@ -68,7 +72,7 @@ export async function store(data: {
                             tanggal: new Date(tanggal),
                             kategori: kategori,
                             password_arsip: hashedPassword,
-                            params: JSON.stringify(paramsJson),
+                            params: JSON.stringify(finalData),
                             created_at: nowWib(),
                             updated_at: null
                         }
@@ -166,25 +170,4 @@ export async function getArsipResource({ search, page, limit, sort, order }: Get
     } catch (error) {
         throw error;
     }
-}
-export async function HapusArsipDOkumen(indexToDelete: number) {
-    // Ambil data (sesuaikan query ini dengan kebutuhanmu, misal data terbaru)
-    const arsip = await prisma.arsip.findFirst(); 
-
-    if (!arsip) return null;
-
-    let currentData = JSON.parse(arsip.file as string || "[]");
-
-    if (indexToDelete > -1 && indexToDelete < currentData.length) {
-        currentData.splice(indexToDelete, 1);
-    } else {
-        throw new Error("Index di luar jangkauan");
-    }
-
-    return await prisma.arsip.update({
-        where: { id: arsip.id },
-        data: {
-            file: JSON.stringify(currentData),
-        },
-    });
 }

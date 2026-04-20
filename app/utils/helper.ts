@@ -28,7 +28,6 @@ export const confirmDelete = async (url: string, onSuccess?: () => void) => {
   });
 
   if (result.isConfirmed) {
-    // Tampilkan loading saat proses hapus berlangsung
     Swal.fire({
       title: "Memproses...",
       didOpen: () => {
@@ -40,8 +39,10 @@ export const confirmDelete = async (url: string, onSuccess?: () => void) => {
     try {
       const response = await fetch(`${url}`, {
         method: "DELETE",
-      });
-      console.log(result);
+      }); 
+      const datas = await response.json();
+      console.log(datas);
+      
 
       if (!response.ok) throw new Error("Gagal menghapus data");
       const data = await response.json();
@@ -59,7 +60,6 @@ export const formatDateIndonesia = (date: Date | string | null | undefined): str
 
   const d = typeof date === "string" ? new Date(date) : date;
 
-  // Cek apakah date valid
   if (isNaN(d.getTime())) return "-";
 
   return d.toLocaleDateString("id-ID", {
@@ -95,6 +95,7 @@ export type ParamArsip = {
 };
 
 export type FieldArsip = {
+  id : number;
   judul: string;
   tanggal: string;
   kategori: string;

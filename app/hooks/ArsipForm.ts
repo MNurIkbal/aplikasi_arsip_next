@@ -11,6 +11,7 @@ import { FieldArsip, parseJSON } from "@/app/utils/helper";
 export const useArsipForm = (initialData: any, onCancel: () => void) => {
 
     const [formData, setFormData] = useState<FieldArsip>({
+        id: 0,
         judul: "",
         tanggal: "",
         kategori: "",
@@ -28,6 +29,7 @@ export const useArsipForm = (initialData: any, onCancel: () => void) => {
     useEffect(() => {
         if (initialData) {
             setFormData({
+                id : initialData.id || 0,
                 judul: initialData.judul || "",
                 tanggal: initialData.tanggal || new Date().toISOString().split("T")[0],
                 kategori: initialData.kategori || "",
@@ -105,13 +107,8 @@ export const useArsipForm = (initialData: any, onCancel: () => void) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        const payload = {
-            ...formData,
-            nama_dokumen: additionalData
-        };
-
-        const validation = validateArsip(payload, !!initialData);
+        const isUpdate = !!initialData;
+        const validation = validateArsip(payload, isUpdate);
 
         if (!validation.isValid) {
             setErrors(validation.errors);
@@ -125,6 +122,12 @@ export const useArsipForm = (initialData: any, onCancel: () => void) => {
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
+
+        const payload = {
+            ...formData,
+            nama_dokumen: additionalData,
+            ...(isUpdate && { id: initialData.id })
+        };
 
         mutation.mutate({
             ...formData,
