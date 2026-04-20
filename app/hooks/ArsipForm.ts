@@ -108,6 +108,11 @@ export const useArsipForm = (initialData: any, onCancel: () => void) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const isUpdate = !!initialData;
+        const payload = {
+            ...formData,
+            nama_dokumen: additionalData,
+            ...(isUpdate && { id: initialData.id })
+        };
         const validation = validateArsip(payload, isUpdate);
 
         if (!validation.isValid) {
@@ -122,12 +127,6 @@ export const useArsipForm = (initialData: any, onCancel: () => void) => {
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
-
-        const payload = {
-            ...formData,
-            nama_dokumen: additionalData,
-            ...(isUpdate && { id: initialData.id })
-        };
 
         mutation.mutate({
             ...formData,
